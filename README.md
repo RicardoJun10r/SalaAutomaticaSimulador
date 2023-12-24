@@ -1,5 +1,5 @@
 # SalaAutomaticaSimulador
-Uma simulação de salas automáticas, com um servidor conectando-se aos microcontroladores das salas, assim automatizando processos de ligar e desligar aparelhos.
+Uma simulação de salas automáticas, com um servidor conectando-se aos microcontroladores das salas, esta conexão é feita através de Sockets, assim automatizando processos de ligar e desligar aparelhos.
 
 ## Projeto
 Com a descrição acima, o projeto é divido em quatro classes:
