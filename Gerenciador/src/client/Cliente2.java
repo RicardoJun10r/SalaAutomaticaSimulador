@@ -1,6 +1,6 @@
 package client;
 
-import Class.Sala;
+import salaAula.Sala;
 
 public class Cliente2 {
     public static void main(String[] args) {
@@ -10,7 +10,7 @@ public class Cliente2 {
 
             sala2.encherSala();
 
-            MicrocontroladorSocket microcontroladorSocket2 = new MicrocontroladorSocket(1, sala2);
+            Microcontrolador microcontroladorSocket2 = new Microcontrolador(1, sala2);
 
             microcontroladorSocket2.start();
             

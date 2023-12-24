@@ -10,7 +10,7 @@ import java.util.Set;
 
 import util.ClientSocket;
 
-public class MicrocontroladorServer {
+public class Server {
     
     public final static int PORTA = 1025;
 
@@ -22,23 +22,23 @@ public class MicrocontroladorServer {
 
     private final Object lock = new Object();
 
-    public MicrocontroladorServer(){
+    public Server(){
         this.scan = new Scanner(System.in);
     }
 
     public void start() throws IOException{
         serverSocket = new ServerSocket(PORTA);
         System.out.println("Iniciando servidor na porta " + PORTA);
-        clientConnectionLoop();
+        serverLoop();
     }
 
-    private void clientConnectionLoop() throws IOException {
+    private void serverLoop() throws IOException {
         while (true) {
             ClientSocket clientSocket = new ClientSocket(this.serverSocket.accept());
             USUARIOS.add(clientSocket);
             new Thread(() -> {
                 try {
-                    clientMessageLoop(clientSocket);
+                    mensagemCliente(clientSocket);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
@@ -70,12 +70,12 @@ public class MicrocontroladorServer {
         );
     }
 
-    private void clientMessageLoop(ClientSocket clientSocket) throws IOException, InterruptedException{
+    private void mensagemCliente(ClientSocket clientSocket) throws IOException, InterruptedException{
         String mensagem;
         try {
             while ((mensagem = clientSocket.getMessage()) != null) {
                 System.out.println(
-                    "Mensagem de "  + clientSocket.getSocketAddress() + ": " + mensagem
+                    "Mensagem de " + clientSocket.getSocketAddress() + ": " + mensagem
                 );
             }
         } finally {

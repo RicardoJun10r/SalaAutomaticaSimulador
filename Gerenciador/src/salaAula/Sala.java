@@ -1,19 +1,16 @@
-package Class;
+package salaAula;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import Aparelhos.ArCondicionado;
-import Aparelhos.Computador;
-import Aparelhos.Interface.InterAparelho;
-// import Client.Microcontrolador;
+import salaAula.Aparelhos.ArCondicionado;
+import salaAula.Aparelhos.Computador;
+import salaAula.Aparelhos.Interface.InterAparelho;
 
 public class Sala {
 
     private List<InterAparelho> aparelhos;
-
-    // private Microcontrolador microcontrolador;
 
     private final int NUMERO_APARELHOS;
 

@@ -6,8 +6,8 @@ public class MainServer {
     
     public static void main(String[] args) {
         try {
-            MicrocontroladorServer microcontroladorServer = new MicrocontroladorServer();
-            microcontroladorServer.start();
+            Server server = new Server();
+            server.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

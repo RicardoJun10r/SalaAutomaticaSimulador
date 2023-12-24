@@ -1,4 +1,4 @@
-package Aparelhos.Interface;
+package salaAula.Aparelhos.Interface;
 
 public interface InterAparelho {
     public void Ligar();

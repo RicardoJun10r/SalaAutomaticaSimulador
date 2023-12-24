@@ -1,18 +1,18 @@
-package Aparelhos;
+package salaAula.Aparelhos;
 
-import Aparelhos.Interface.InterAparelho;
+import salaAula.Aparelhos.Interface.InterAparelho;
 
-public class ArCondicionado implements InterAparelho {
-
+public class Computador implements InterAparelho {
+    
     private boolean status;
 
     private final int ID;
-    
-    public ArCondicionado(int id){
+
+    public Computador(int id){
         this.ID = id;
         this.status = false;
     }
-    
+
     public boolean isStatus() {
         return status;
     }
@@ -20,7 +20,7 @@ public class ArCondicionado implements InterAparelho {
     public int getID() {
         return ID;
     }
-    
+
     @Override
     public void Ligar() {
         this.status = true;
@@ -33,7 +33,7 @@ public class ArCondicionado implements InterAparelho {
 
     @Override
     public String Descricao() {
-        return "Ar-condicionado de ID = [ " + ID + " ] | Status = [ " + this.status + " ]\n";
+        return "Computador de ID = [ " + ID + " ] | Status = [ " + this.status + " ]\n";
     }
     
 }
