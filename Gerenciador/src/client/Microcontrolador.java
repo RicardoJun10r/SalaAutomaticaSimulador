@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import salaAula.Sala;
-import server.MicrocontroladorServer;
+import server.Server;
 import util.ClientSocket;
 
 public class Microcontrolador implements Runnable {
@@ -94,9 +94,9 @@ public class Microcontrolador implements Runnable {
     public void start() throws IOException, UnknownHostException{
         try {
             clientSocket = new ClientSocket(
-                new Socket(ENDERECO_SERVER, MicrocontroladorServer.PORTA)
+                new Socket(ENDERECO_SERVER, Server.PORTA)
             );
-            System.out.println("Cliente conectado ao servidor de endereço = " + ENDERECO_SERVER + " na porta = " + MicrocontroladorServer.PORTA);
+            System.out.println("Cliente conectado ao servidor de endereço = " + ENDERECO_SERVER + " na porta = " + Server.PORTA);
             new Thread(this).start();
         } catch(IOException e) {
             e.printStackTrace();
