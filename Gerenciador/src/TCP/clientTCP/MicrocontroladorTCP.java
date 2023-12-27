@@ -1,14 +1,14 @@
-package client;
+package TCP.clientTCP;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import TCP.serverTCP.Server;
 import salaAula.Sala;
-import server.Server;
 import util.ClientSocket;
 
-public class Microcontrolador implements Runnable {
+public class MicrocontroladorTCP implements Runnable {
     
     private final String ENDERECO_SERVER = "localhost";
 
@@ -18,7 +18,7 @@ public class Microcontrolador implements Runnable {
     
     private final Sala SALA;
     
-    public Microcontrolador(int id, Sala sala){
+    public MicrocontroladorTCP(int id, Sala sala){
         this.ID = id;
         this.SALA = sala;
     }

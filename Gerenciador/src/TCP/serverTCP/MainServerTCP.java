@@ -1,8 +1,8 @@
-package server;
+package TCP.serverTCP;
 
 import java.io.IOException;
 
-public class MainServer {
+public class MainServerTCP {
     
     public static void main(String[] args) {
         try {
