@@ -34,11 +34,17 @@ public class ServerUDP {
             StringBuffer stringBuffer = new StringBuffer();
             menu();
             int opcao = scanner.nextInt();
-            if(opcao == 4){
+            if(opcao == 5){
                 System.out.println("Onde você deseja se conectar ?");
                 this.messageUDP.setPORTA_DESTINO( scanner.nextInt() );
-            } else if(opcao == 3){
+            } else if(opcao == 4){
                 limparTela();
+            } else if(opcao == 3){
+                stringBuffer.append(-1).append(" ").append(opcao).append(" ").append(this.messageUDP.getPORTA_PROPRIA());
+                this.messageUDP.setBuffer_entrada( stringBuffer.toString().getBytes() );
+                this.messageUDP.enviar();
+                String[] response = this.messageUDP.receber().split(" ");
+                System.out.println("RESPOSTA: " + Arrays.toString(response));
             } else {
                 System.out.println("Qual ID da sala ?");
                 int ID_SALA = scanner.nextInt();
@@ -66,8 +72,9 @@ public class ServerUDP {
     }
 
     private void menu(){
+        System.out.println("SERVIDOR ESTÁ APONTANDO PARA A PORTA: " + this.messageUDP.getPORTA_DESTINO());
         System.out.println(
-            "OPÇÕES\n[0] --> DESLIGAR TODOS\n[1] --> LIGAR TODOS\n[2] --> MOSTRAR TODOS\n[3] --> LIMPAR TELA\n[4] --> MUDAR PORTA DESTINO\n"
+            "OPÇÕES\n[0] --> DESLIGAR TODOS\n[1] --> LIGAR TODOS\n[2] --> MOSTRAR TODOS\n[3] --> SCANEAR REDE\n[4] --> LIMPAR TELA\n[5] --> MUDAR PORTA DESTINO"
         );
     }
 

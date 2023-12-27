@@ -30,7 +30,7 @@ public class MicrocontroladorUDP {
             String response = this.messageUDP.receber();
             if( (Integer.parseInt(response.split(" ")[0]) != ID) ){
                 System.out.println("ENCAMINHANDO: " + ID);
-                stringBuffer.append(response).append("|").append(this.messageUDP.getPORTA_PROPRIA());
+                stringBuffer.append(response).append("|").append(this.messageUDP.getPORTA_PROPRIA()).append(":").append(ID);
                 this.messageUDP.setBuffer_entrada( stringBuffer.toString().getBytes() );
                 this.messageUDP.enviar();
             } else {
