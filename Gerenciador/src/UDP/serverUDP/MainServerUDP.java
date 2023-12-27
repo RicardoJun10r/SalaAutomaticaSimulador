@@ -6,7 +6,7 @@ import java.net.UnknownHostException;
 public class MainServerUDP {
     public static void main(String[] args) {
         try {
-            Servidor servidor = new Servidor(1026, 1026, "127.0.0.1");
+            ServerUDP servidor = new ServerUDP(1026, 1026, "127.0.0.1");
             servidor.start();
         } catch (SocketException | UnknownHostException e) {
             e.printStackTrace();

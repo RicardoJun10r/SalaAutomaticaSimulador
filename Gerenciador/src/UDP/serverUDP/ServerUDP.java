@@ -7,13 +7,13 @@ import java.util.Scanner;
 
 import util.MessageUDP;
 
-public class Servidor {
+public class ServerUDP {
 
     private MessageUDP messageUDP;
 
     private Scanner scanner;
 
-    public Servidor(int PORTA_PROPRIA, int PORTA_DESTINO, String address) throws SocketException, UnknownHostException{
+    public ServerUDP(int PORTA_PROPRIA, int PORTA_DESTINO, String address) throws SocketException, UnknownHostException{
         this.messageUDP = new MessageUDP(PORTA_PROPRIA, PORTA_DESTINO, address);
         this.scanner = new Scanner(System.in);
     }

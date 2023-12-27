@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import TCP.serverTCP.Server;
+import TCP.serverTCP.ServerTCP;
 import salaAula.Sala;
 import util.ClientSocket;
 
@@ -94,9 +94,9 @@ public class MicrocontroladorTCP implements Runnable {
     public void start() throws IOException, UnknownHostException{
         try {
             clientSocket = new ClientSocket(
-                new Socket(ENDERECO_SERVER, Server.PORTA)
+                new Socket(ENDERECO_SERVER, ServerTCP.PORTA)
             );
-            System.out.println("Cliente conectado ao servidor de endereço = " + ENDERECO_SERVER + " na porta = " + Server.PORTA);
+            System.out.println("Cliente conectado ao servidor de endereço = " + ENDERECO_SERVER + " na porta = " + ServerTCP.PORTA);
             new Thread(this).start();
         } catch(IOException e) {
             e.printStackTrace();

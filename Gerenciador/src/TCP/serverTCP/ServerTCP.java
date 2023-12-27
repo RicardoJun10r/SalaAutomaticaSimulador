@@ -10,7 +10,7 @@ import java.util.Set;
 
 import util.ClientSocket;
 
-public class Server {
+public class ServerTCP {
     
     public final static int PORTA = 1025;
 
@@ -22,7 +22,7 @@ public class Server {
 
     private final Object lock = new Object();
 
-    public Server(){
+    public ServerTCP(){
         this.scan = new Scanner(System.in);
     }
 
