@@ -52,21 +52,6 @@ public class MessageUDP {
         return "Erro: Cheque o buffer !";
     }
 
-    public void PingRequest(){
-        byte[] ping = "OLA".getBytes();
-        setBuffer_entrada(ping);
-        enviar();
-        if(!new String(buffer_saida).equalsIgnoreCase("mundo")){
-            this.PORTA_DESTINO = 1026;
-        }
-    }
-
-    public void PingResponse(){
-        byte[] ping = "MUNDO".getBytes();
-        setBuffer_saida(ping);
-        receber();
-    }
-
     public DatagramSocket getSocket() {
         return socket;
     }
