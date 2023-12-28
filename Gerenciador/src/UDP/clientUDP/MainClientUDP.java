@@ -14,8 +14,8 @@ public class MainClientUDP {
     public static void main(String[] args) {
 
         for (int i = 0; i < NUMERO_SALAS; i++) {
-            int PORTA_DESTINO = (PORTA_INICIAL + i) + 1;
             int PORTA = PORTA_INICIAL + i;
+            int PORTA_DESTINO = PORTA + 1;
             int ID = 10 + i;
             int NUMERO_APARELHOS = 1 + i;
             new Thread(() -> {
