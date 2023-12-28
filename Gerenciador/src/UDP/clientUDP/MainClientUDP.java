@@ -18,7 +18,6 @@ public class MainClientUDP {
             int PORTA = PORTA_INICIAL + i;
             int ID = 10 + i;
             int NUMERO_APARELHOS = 1 + i;
-            System.out.println("PORTA: " + PORTA + "\nPORTA DESTINO: " + PORTA_DESTINO);
             new Thread(() -> {
                 try {
                     MicrocontroladorUDP microcontrolador = new MicrocontroladorUDP(PORTA, PORTA_DESTINO, "127.0.0.1", ID, new Sala(NUMERO_APARELHOS));
