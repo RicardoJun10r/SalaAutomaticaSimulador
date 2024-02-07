@@ -65,25 +65,25 @@ public class MicrocontroladorTCP implements Runnable {
     private void executeCommand(int option){
         switch (option) {
             case 0:
-                {
-                    sendMessage("ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos());
-                    break;
-                }
+            {
+                sendMessage("ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos());
+                break;
+            }
             case 1:
-                {
-                    sendMessage("ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos());
-                    break;
-                }
+            {
+                sendMessage("ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos());
+                break;
+            }
             case 2:
-                {
-                    sendMessage("ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos());
-                    break;
-                }
+            {
+                sendMessage("ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos());
+                break;
+            }
             default:
-                {
-                    sendMessage("ID = [ " + ID + " ]: " + "ERRO: opção inválida!");
-                    break;
-                }
+            {
+                sendMessage("ID = [ " + ID + " ]: " + "ERRO: opção inválida!");
+                break;
+            }
         }
     }
 

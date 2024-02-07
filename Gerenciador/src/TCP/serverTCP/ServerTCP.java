@@ -11,7 +11,7 @@ import java.util.Set;
 import util.ClientSocket;
 
 public class ServerTCP {
-    
+
     public final static int PORTA = 1025;
 
     private ServerSocket serverSocket;
@@ -22,11 +22,11 @@ public class ServerTCP {
 
     private final Object lock = new Object();
 
-    public ServerTCP(){
+    public ServerTCP() {
         this.scan = new Scanner(System.in);
     }
 
-    public void start() throws IOException{
+    public void start() throws IOException {
         serverSocket = new ServerSocket(PORTA);
         System.out.println("Iniciando servidor na porta " + PORTA);
         serverLoop();
@@ -57,60 +57,56 @@ public class ServerTCP {
         }
     }
 
-    private void menu(){
+    private void menu() {
         Iterator<ClientSocket> iterator = this.USUARIOS.iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             ClientSocket i = iterator.next();
             System.out.println(
-                i.getId() + " --> " + i.getSocketAddress()
-            );
+                    i.getId() + " --> " + i.getSocketAddress());
         }
         System.out.println(
-            "------OPÇÕES------\n[0] --> DESLIGAR TUDO\n[1] --> LIGAR TUDO\n[2] --> DESCRIÇÃO\nOpção e porta( ex: 9 8080 ):"
-        );
+                "------OPÇÕES------\n[0] --> DESLIGAR TUDO\n[1] --> LIGAR TUDO\n[2] --> DESCRIÇÃO\nOpção e porta( ex: 9 8080 ):");
     }
 
-    private void mensagemCliente(ClientSocket clientSocket) throws IOException, InterruptedException{
+    private void mensagemCliente(ClientSocket clientSocket) throws IOException, InterruptedException {
         String mensagem;
         try {
             while ((mensagem = clientSocket.getMessage()) != null) {
                 System.out.println(
-                    "Mensagem de " + clientSocket.getSocketAddress() + ": " + mensagem
-                );
+                        "Mensagem de " + clientSocket.getSocketAddress() + ": " + mensagem);
             }
         } finally {
             clientSocket.close();
         }
     }
-    
+
     private void sendOrder() throws IOException, InterruptedException {
-        synchronized(lock){
+        synchronized (lock) {
             String mensagem;
             String destinatario;
-            while(true){
+            while (true) {
                 Thread.sleep(300);
                 menu();
-    
+
                 String input = this.scan.nextLine();
                 String[] parts = input.split(" ");
-    
+
                 // System.out.println("ENTRDAS = " + parts.length);
-    
+
                 // System.out.println(Arrays.toString(parts));
-    
+
                 if (parts.length >= 2) {
                     mensagem = parts[0];
                     destinatario = parts[1];
-                    if(validarEntrada(mensagem, destinatario)){
-                    String endereco = "/127.0.0.1:".concat(destinatario);
-                    // System.out.println(
-                    //     "SERVIDOR:\nMensagem: " + mensagem + "\nDestino: " + destinatario
-                    // );
-                    sendMessageTo(endereco, mensagem);
+                    if (validarEntrada(mensagem, destinatario)) {
+                        String endereco = "/127.0.0.1:".concat(destinatario);
+                        // System.out.println(
+                        // "SERVIDOR:\nMensagem: " + mensagem + "\nDestino: " + destinatario
+                        // );
+                        sendMessageTo(endereco, mensagem);
                     } else {
                         System.out.println(
-                            "ERRO: Entradas incorretas!"
-                        );
+                                "ERRO: Entradas incorretas!");
                     }
                 } else {
                     System.out.println("Erro!");
@@ -119,20 +115,20 @@ public class ServerTCP {
         }
     }
 
-    private boolean validarEntrada(String mensagem, String destinatario){
+    private boolean validarEntrada(String mensagem, String destinatario) {
         boolean flag = true;
-        if(mensagem.isEmpty() || destinatario.isEmpty()){
+        if (mensagem.isEmpty() || destinatario.isEmpty()) {
             flag = false;
         }
         return flag;
     }
 
-    private void sendMessageTo(String destinataio, String mensagem){
+    private void sendMessageTo(String destinataio, String mensagem) {
         Iterator<ClientSocket> iterator = this.USUARIOS.iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             ClientSocket i = iterator.next();
-            if(i.getSocketAddress().toString().equals(destinataio)){
-                if(!i.sendMessage(mensagem))
+            if (i.getSocketAddress().toString().equals(destinataio)) {
+                if (!i.sendMessage(mensagem))
                     iterator.remove();
             }
         }

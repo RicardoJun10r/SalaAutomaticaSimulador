@@ -26,16 +26,16 @@ public class MessageV2 {
 
     private byte[] buffer_saida;
 
-    private MessageEnum messageEnum;
+    private boolean isServer;
 
-    public MessageV2(int PORTA_PROPRIA, int PORTA_DESTINO, String address_proprio, String address_destino, MessageEnum messageEnum) throws SocketException, UnknownHostException{
+    public MessageV2(int PORTA_PROPRIA, int PORTA_DESTINO, String address_proprio, String address_destino, boolean isServer) throws SocketException, UnknownHostException{
         this.PORTA_PROPRIA = PORTA_PROPRIA;
         this.PORTA_DESTINO = PORTA_DESTINO;
         this.socket = new DatagramSocket(PORTA_PROPRIA);
         this.address_proprio = InetAddress.getByName(address_proprio);
         this.address_destino = InetAddress.getByName(address_destino);
         this.buffer_saida = new byte[this.BUFFER_SIZE];
-        this.messageEnum = messageEnum;
+        this.isServer = isServer;
     }
 
     public void enviar(){
@@ -102,20 +102,28 @@ public class MessageV2 {
         return address_proprio;
     }
 
-    public void setAddress_proprio(InetAddress address_proprio) {
-        this.address_proprio = address_proprio;
+    public void setAddress_proprio(String address_proprio) {
+        try {
+            this.address_proprio = InetAddress.getByName(address_proprio);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     public InetAddress getAddress_destino() {
         return address_destino;
     }
 
-    public void setAddress_destino(InetAddress address_destino) {
-        this.address_destino = address_destino;
+    public void setAddress_destino(String address_destino) {
+        try {
+            this.address_destino = InetAddress.getByName( address_destino );
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
-    public MessageEnum getMessageEnum() {
-        return messageEnum;
+    public boolean getIsServer() {
+        return isServer;
     }
 
 }

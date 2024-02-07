@@ -16,7 +16,7 @@ public class Table<V, K> {
 
     @SuppressWarnings("unchecked")
     public Table(){
-        this.M = 97;
+        this.M = 10;
         this.tabela = new Node[this.M];
         this.size = 0;
         this.isResize = true;
@@ -295,18 +295,19 @@ public class Table<V, K> {
         System.out.println("Fator de carga = " + this.decimalFormat.format(FatorDeCarga()));
     }
 
-    public String Print(Integer posicao){
+    public String Print(){
         StringBuffer res = new StringBuffer();
         Node<V, K> index;
-
-        index = this.tabela[posicao];
-        res.append(posicao);
-        while (index != null) {
-            res.append(" --> "); 
-            res.append(index.getValor());
-            index = index.getProx();
+        for(int i = 0; i < this.M; i++){
+            index = this.tabela[i];
+            res.append(i);
+            while (index != null) {
+                res.append(" --> "); 
+                res.append(index.getValor());
+                index = index.getProx();
+            }
+            res.append("\n");
         }
-        res.append("\n");
 
         return res.toString();
     }
