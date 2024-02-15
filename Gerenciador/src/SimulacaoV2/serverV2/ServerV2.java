@@ -1,5 +1,7 @@
 package SimulacaoV2.serverV2;
 
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -17,34 +19,67 @@ public class ServerV2 {
 
     private Table<TableHelper, Integer> table;
 
+    public ServerV2(int porta, String address) {
+        try {
+            this.socket = new MessageV2(porta, porta, address, address, true);
+            this.scanner = new Scanner(System.in);
+            this.table = new Table<>();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void start(){
+        serverLoop();
+    }
+
     private void serverLoop() {
 
         System.out.println("Seu login");
         this.login = this.scanner.nextLine();
-
+        System.out.println("INICIANDO");
         while (true) {
             new Thread(() -> {
-                receberMensagens();
-            });
-            new Thread(() -> {
                 enviarMensagem();
-            });
+            }).start();
+            new Thread(() -> {
+                receberMensagens();
+            }).start();
         }
     }
 
-    private void enviarMensagem() {
+    private synchronized void enviarMensagem() {
         while (true) {
             menu();
             String input = this.scanner.nextLine();
-            System.out.println("HOST(ex: 127.0.0.1):");
-            String host_name = this.scanner.nextLine();
-            System.out.println("PORTA(ex: 8080):");
-            int porta = this.scanner.nextInt();
-            enviar(
-                    input,
-                    host_name,
-                    porta);
+            if (input.equals("3")) {
+                menuServer();
+                input = this.scanner.nextLine();
+                if (input.equals("ping")) {
+                    buildSend(input);
+                } else if (input.equals("command")) {
+                    System.out.println(
+                            "OPÇÕES\n[100] --> MOSTRAR TODOS\n[200] --> LIGAR TODOS\n[300] --> DESLIGAR TODOS\n");
+                    input = this.scanner.nextLine();
+                    buildSend(input);
+                }
+            } else {
+                buildSend(input);
+            }
         }
+    }
+
+    private void buildSend(String input) {
+        System.out.println("HOST(ex: 127.0.0.1):");
+        String host_name = this.scanner.nextLine();
+        System.out.println("PORTA(ex: 8080):");
+        int porta = this.scanner.nextInt();
+        enviar(
+                input,
+                host_name,
+                porta);
     }
 
     private void enviar(String msg, String host, int port) {
@@ -60,7 +95,11 @@ public class ServerV2 {
     private void menu() {
         System.out.println("SERVIDOR ESTÁ APONTANDO PARA A PORTA: " + this.socket.getPORTA_DESTINO());
         System.out.println(
-                "OPÇÕES\n[0] --> DESLIGAR TODOS\n[1] --> LIGAR TODOS\n[2] --> MOSTRAR TODOS\n[3] --> SCANEAR REDE\n[4] --> LIMPAR TELA\n[5] --> MUDAR PORTA DESTINO");
+                "OPÇÕES\ndesligar --> DESLIGAR TODOS\nligar --> LIGAR TODOS\nmostrar --> MOSTRAR TODOS\n[3] --> CONECTAR-SE A OUTRO SERVER\n");
+    }
+
+    private void menuServer() {
+        System.out.println("COMANDOS\nping --> CONECTAR\ncommand --> EXECUTAR COMANDO NO SERVER\n");
     }
 
     /**
@@ -72,29 +111,31 @@ public class ServerV2 {
 
     private void receberMensagens() {
         String[] msg = this.socket.receber().split(" ");
-        switch (msg[0]) {
-            case "ping": {
-                System.out.println("PING");
-                System.out.println(
-                        Boolean.parseBoolean(msg[1]) == true ? "SERVER - Conectado" : "MICROCONTROLADOR - Conectado");
-                this.table.Adicionar(
-                        new TableHelper(msg[4], msg[2], Integer.parseInt(msg[3]), Boolean.parseBoolean(msg[1])),
-                        Integer.parseInt(msg[4]));
-                break;
-            }
-            case "command": {
-                System.out.println("COMMAND");
-                command(msg);
-                break;
-            }
-            case "reponse": {
-                System.out.println("RESPONSE");
-                System.out.println(Arrays.toString(msg));
-                break;
-            }
-            default: {
-                System.out.println("Mensagem não seguiu o protocolo !");
-                break;
+        if(msg.length > 0){
+            switch (msg[0]) {
+                case "ping": {
+                    System.out.println("PING");
+                    System.out.println(
+                            Boolean.parseBoolean(msg[1]) == true ? "SERVER - Conectado" : "MICROCONTROLADOR - Conectado");
+                    this.table.Adicionar(
+                            new TableHelper(msg[4], msg[2], Integer.parseInt(msg[3]), Boolean.parseBoolean(msg[1])),
+                            Integer.parseInt(msg[4]));
+                    break;
+                }
+                case "command": {
+                    System.out.println("COMMAND");
+                    command(msg);
+                    break;
+                }
+                case "reponse": {
+                    System.out.println("RESPONSE");
+                    System.out.println(Arrays.toString(msg));
+                    break;
+                }
+                default: {
+                    System.out.println("Mensagem não seguiu o protocolo !");
+                    break;
+                }
             }
         }
     }

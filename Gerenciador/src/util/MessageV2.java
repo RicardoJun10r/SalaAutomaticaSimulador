@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public class MessageV2 {
     
-    private final int BUFFER_SIZE = 1024;
+    private final int BUFFER_SIZE = 2048;
     
     private DatagramSocket socket;
 
