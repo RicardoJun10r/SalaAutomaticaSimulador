@@ -2,6 +2,8 @@ package SimulacaoV2.serverV2;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,6 +11,7 @@ import java.util.Scanner;
 import java.util.Set;
 
 import util.ClientSocket;
+import util.MessageV2;
 import util.TableHelper;
 import util.HashTable.Table;
 
@@ -20,7 +23,7 @@ public class ServerV3 {
 
     private ServerSocket serverSocket;
 
-    private Table<ClientSocket, String> table;
+    // private Table<ClientSocket, String> table;
 
     private String login;
 
@@ -30,13 +33,18 @@ public class ServerV3 {
 
     private final Object lock = new Object();
 
-    private ClientSocket socket;
+    private MessageV2 client;
 
     public ServerV3(String ENDERECO, int PORTA) {
         this.scan = new Scanner(System.in);
         this.ENDERECO = ENDERECO;
         this.PORTA = PORTA;
-        this.table = new Table<>();
+        // this.table = new Table<>();
+        try {
+            this.client = new MessageV2(PORTA+1, -1, ENDERECO, null, true);
+        } catch (SocketException | UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     public void start() throws IOException {
@@ -51,7 +59,7 @@ public class ServerV3 {
         while (true) {
             ClientSocket clientSocket = new ClientSocket(this.serverSocket.accept());
             USUARIOS.add(clientSocket);
-            table.Adicionar(clientSocket, clientSocket.getId());
+            // table.Adicionar(clientSocket, clientSocket.getId());
             new Thread(() -> {
                 try {
                     mensagemCliente(clientSocket);
@@ -70,15 +78,15 @@ public class ServerV3 {
     }
 
     private void listarUsuarios() {
-        // Iterator<ClientSocket> iterator = this.USUARIOS.iterator();
-        // while (iterator.hasNext()) {
-        // ClientSocket i = iterator.next();
-        // System.out.println(
-        // i.getId() + " --> " + i.getSocketAddress());
-        // }
-
+        Iterator<ClientSocket> iterator = this.USUARIOS.iterator();
+        while (iterator.hasNext()) {
+        ClientSocket i = iterator.next();
         System.out.println(
-                this.table.Print());
+        i.getId() + " --> " + i.getSocketAddress());
+        }
+
+        // System.out.println(
+        //         this.table.Print());
     }
 
     private void mostrarOpcoes() {
@@ -138,7 +146,7 @@ public class ServerV3 {
                         infoDestino(opcao, endereco, porta);
                         if(validarEntrada(opcao, endereco, porta)){
                             mensagem = opcao;
-                            destinatario = endereco + ":" + porta;
+                            destinatario = "/" + endereco + ":" + porta;
                             sendMessageTo(destinatario, mensagem);
                         }
                         break;
@@ -148,7 +156,7 @@ public class ServerV3 {
                         infoDestino(opcao, endereco, porta);
                         if(validarEntrada(opcao, endereco, porta)){
                             mensagem = opcao;
-                            destinatario = endereco + ":" + porta;
+                            destinatario = "/" + endereco + ":" + porta;
                             sendMessageTo(destinatario, mensagem);
                         }
                         break;
