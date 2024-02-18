@@ -14,7 +14,7 @@ public class ClientSocket {
     private final Socket socket;
 
     private final BufferedReader leitor;
-
+    
     private final PrintWriter escritor;
 
     public ClientSocket(Socket socket) throws IOException{
@@ -23,6 +23,10 @@ public class ClientSocket {
         this.id = socket.getRemoteSocketAddress().toString().split(":")[1];
         this.leitor = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         this.escritor = new PrintWriter(socket.getOutputStream(), true);
+    }
+    
+    public Socket getSocket() {
+        return socket;
     }
 
     public SocketAddress getSocketAddress(){

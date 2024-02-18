@@ -10,7 +10,7 @@ public class MainServerV3 {
 
         int port = 2000;
 
-        ServerV3 serverV3 = new ServerV3("127.0.0.1", port);
+        ServerV3 serverV3 = new ServerV3(port);
         try {
             serverV3.start();
         } catch (IOException e) {

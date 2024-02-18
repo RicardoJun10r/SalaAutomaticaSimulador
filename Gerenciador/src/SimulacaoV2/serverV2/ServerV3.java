@@ -10,18 +10,12 @@ import java.util.Scanner;
 import java.util.Set;
 
 import util.ClientSocket;
-import util.TableHelper;
-import util.HashTable.Table;
 
 public class ServerV3 {
 
     private final int PORTA;
 
-    private final String ENDERECO;
-
     private ServerSocket serverSocket;
-
-    // private Table<ClientSocket, String> table;
 
     private String login;
 
@@ -31,11 +25,9 @@ public class ServerV3 {
 
     private final Object lock = new Object();
 
-    public ServerV3(String ENDERECO, int PORTA) {
+    public ServerV3(int PORTA) {
         this.scan = new Scanner(System.in);
-        this.ENDERECO = ENDERECO;
         this.PORTA = PORTA;
-        // this.table = new Table<>();
     }
 
     public void start() throws IOException {
@@ -50,7 +42,6 @@ public class ServerV3 {
         while (true) {
             ClientSocket clientSocket = new ClientSocket(this.serverSocket.accept());
             USUARIOS.add(clientSocket);
-            // table.Adicionar(clientSocket, clientSocket.getId());
             new Thread(() -> {
                 try {
                     mensagemCliente(clientSocket);
@@ -75,35 +66,58 @@ public class ServerV3 {
             System.out.println(
                     i.getId() + " --> " + i.getSocketAddress());
         }
-
-        // System.out.println(
-        // this.table.Print());
     }
 
     private void mostrarOpcoes() {
+        System.out.println(" _ __ ___   ___ _ __  _   _ \n" + //
+                "| '_ ` _ \\ / _ \\ '_ \\| | | |\n" + //
+                "| | | | | |  __/ | | | |_| |\n" + //
+                "|_| |_| |_|\\___|_| |_|\\__,_|");
         System.out.println(
-                "------OPÇÕES------\n" +
-                        "[0] --> USAR MICROCONTROLADOR\n" +
-                        "[1] --> CONECTAR-SE A OUTRO SERVIDOR\n" +
-                        "[2] --> LISTAR CONEXÕES\n" +
-                        "Opção:");
+                "OPCOES\n" + //
+                        "[0] --> USAR MICROCONTROLADOR\n" + //
+                        "[1] --> CONECTAR-SE A OUTRO SERVIDOR\n" + //
+                        "[2] --> LISTAR CONEXOES\n" + //
+                        "OPCAO:");
     }
 
     private void microcontroladorOpcoes() {
+        System.out.println("\n" + //
+                "  __  __  _                                       _                _             _              \n" + //
+                " |  \\/  |(_)                                     | |              | |           | |             \n" + //
+                " | \\  / | _   ___  _ __  ___    ___  ___   _ __  | |_  _ __  ___  | |  __ _   __| |  ___   _ __ \n" + //
+                " | |\\/| || | / __|| '__|/ _ \\  / __|/ _ \\ | '_ \\ | __|| '__|/ _ \\ | | / _` | / _` | / _ \\ | '__|\n"
+                + //
+                " | |  | || || (__ | |  | (_) || (__| (_) || | | || |_ | |  | (_) || || (_| || (_| || (_) || |   \n" + //
+                " |_|  |_||_| \\___||_|   \\___/  \\___|\\___/ |_| |_| \\__||_|   \\___/ |_| \\__,_| \\__,_| \\___/ |_|   \n"
+                + //
+                "                                                                                                \n" + //
+                "                                                                                                \n" + //
+                "");
         System.out.println(
-                "------OPÇÕES DO MICROCONTROLADOR------\n" +
-                        "[0] --> DESLIGAR SALA\n" +
-                        "[1] --> LIGAR SALA\n" +
-                        "[2] --> DESCRIÇÃO DA SALA");
+                "OPCOES DO MICROCONTROLADOR\n" + //
+                        "[0] --> DESLIGAR SALA\n" + //
+                        "[1] --> LIGAR SALA\n" + //
+                        "[2] --> DESCRICAO DA SALA");
     }
 
     private void controlarServer() {
+        System.out.println("\n" + //
+                "   _____                               \n" + //
+                "  / ____|                              \n" + //
+                " | (___    ___  _ __ __   __ ___  _ __ \n" + //
+                "  \\___ \\  / _ \\| '__|\\ \\ / // _ \\| '__|\n" + //
+                "  ____) ||  __/| |    \\ V /|  __/| |   \n" + //
+                " |_____/  \\___||_|     \\_/  \\___||_|   \n" + //
+                "                                       \n" + //
+                "                                       \n" + //
+                "");
         System.out.println(
-                "------OPÇÕES DO SERVER------\n" +
-                        "[0] --> DESLIGAR SALA\n" +
-                        "[1] --> LIGAR SALA\n" +
-                        "[2] --> DESCRIÇÃO DA SALA\n" +
-                        "[3] --> LISTAR CONEXÕES");
+                "OPCOES DO SERVER\n" + //
+                        "[0] --> DESLIGAR SALA\n" + //
+                        "[1] --> LIGAR SALA\n" + //
+                        "[2] --> DESCRICAO DA SALA\n" + //
+                        "[3] --> LISTAR CONEXOES");
     }
 
     private void mensagemCliente(ClientSocket clientSocket) throws IOException, InterruptedException {
@@ -112,24 +126,27 @@ public class ServerV3 {
             while ((mensagem = clientSocket.getMessage()) != null) {
                 if (mensagem.contains("req")) {
                     String[] req = mensagem.split(" ");
+                    String dest;
                     switch (req[1]) {
                         case "0":
-                        System.out.println("deslistando");
-
+                            dest = "/" + req[2] + ":" + req[3];
+                            sendMessageTo(dest, "0");
+                            System.out.println("deslistando");
                             sendMessageTo(clientSocket.getSocketAddress().toString(), "Desligado!");
                             break;
                         case "1":
-                        System.out.println("ligando " + clientSocket.getSocketAddress().toString());
-
+                            dest = "/" + req[2] + ":" + req[3];
+                            sendMessageTo(dest, "1");
+                            System.out.println("ligando " + clientSocket.getSocketAddress().toString());
                             sendMessageTo(clientSocket.getSocketAddress().toString(), "Ligado!");
                             break;
                         case "2":
-                        System.out.println("listando");
+                            System.out.println("listando");
                             String res = this.USUARIOS.toString();
                             sendMessageTo(clientSocket.getSocketAddress().toString(), res);
                             break;
                         default:
-                        System.out.println("erro");
+                            System.out.println("Erro!");
                             sendMessageTo(clientSocket.getSocketAddress().toString(), "Erro!");
                             break;
                     }
@@ -181,9 +198,14 @@ public class ServerV3 {
                         endereco = res[1];
                         porta = res[2];
                         if (validarEntrada(opcao, endereco, porta)) {
-                            mensagem = "req" + " " + opcao;
+                            System.out.println("Endereço da sala (ex: 127.0.0.1)");
+                            String endereco_destino = this.scan.next();
+                            System.out.println("Porta da sala (ex: 8008)");
+                            String porta_destino = this.scan.next();
+                            mensagem = "req" + " " + opcao + " " + endereco_destino + " " + porta_destino;
                             ClientSocket socket = new ClientSocket(
                                     new Socket(endereco, Integer.parseInt(porta)));
+                            this.USUARIOS.add(socket);
                             socket.sendMessage(mensagem);
                             Thread.sleep(300);
                             System.out.println(socket.getMessage());
