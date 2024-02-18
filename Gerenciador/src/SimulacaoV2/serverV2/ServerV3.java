@@ -2,8 +2,7 @@ package SimulacaoV2.serverV2;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.Socket;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,7 +10,6 @@ import java.util.Scanner;
 import java.util.Set;
 
 import util.ClientSocket;
-import util.MessageV2;
 import util.TableHelper;
 import util.HashTable.Table;
 
@@ -33,18 +31,11 @@ public class ServerV3 {
 
     private final Object lock = new Object();
 
-    private MessageV2 client;
-
     public ServerV3(String ENDERECO, int PORTA) {
         this.scan = new Scanner(System.in);
         this.ENDERECO = ENDERECO;
         this.PORTA = PORTA;
         // this.table = new Table<>();
-        try {
-            this.client = new MessageV2(PORTA+1, -1, ENDERECO, null, true);
-        } catch (SocketException | UnknownHostException e) {
-            e.printStackTrace();
-        }
     }
 
     public void start() throws IOException {
@@ -80,13 +71,13 @@ public class ServerV3 {
     private void listarUsuarios() {
         Iterator<ClientSocket> iterator = this.USUARIOS.iterator();
         while (iterator.hasNext()) {
-        ClientSocket i = iterator.next();
-        System.out.println(
-        i.getId() + " --> " + i.getSocketAddress());
+            ClientSocket i = iterator.next();
+            System.out.println(
+                    i.getId() + " --> " + i.getSocketAddress());
         }
 
         // System.out.println(
-        //         this.table.Print());
+        // this.table.Print());
     }
 
     private void mostrarOpcoes() {
@@ -119,8 +110,33 @@ public class ServerV3 {
         String mensagem;
         try {
             while ((mensagem = clientSocket.getMessage()) != null) {
-                System.out.println(
-                        "Mensagem de " + clientSocket.getSocketAddress() + ": " + mensagem);
+                if (mensagem.contains("req")) {
+                    String[] req = mensagem.split(" ");
+                    switch (req[1]) {
+                        case "0":
+                        System.out.println("deslistando");
+
+                            sendMessageTo(clientSocket.getSocketAddress().toString(), "Desligado!");
+                            break;
+                        case "1":
+                        System.out.println("ligando " + clientSocket.getSocketAddress().toString());
+
+                            sendMessageTo(clientSocket.getSocketAddress().toString(), "Ligado!");
+                            break;
+                        case "2":
+                        System.out.println("listando");
+                            String res = this.USUARIOS.toString();
+                            sendMessageTo(clientSocket.getSocketAddress().toString(), res);
+                            break;
+                        default:
+                        System.out.println("erro");
+                            sendMessageTo(clientSocket.getSocketAddress().toString(), "Erro!");
+                            break;
+                    }
+                } else {
+                    System.out.println(
+                            "Mensagem de " + clientSocket.getSocketAddress() + ": " + mensagem);
+                }
             }
         } finally {
             clientSocket.close();
@@ -134,7 +150,11 @@ public class ServerV3 {
             String endereco = "";
             String porta = "";
             String destinatario;
+            String[] res;
+
             while (true) {
+
+                Thread.sleep(300);
 
                 mostrarOpcoes();
 
@@ -143,8 +163,11 @@ public class ServerV3 {
                 switch (opcao) {
                     case "0": {
                         microcontroladorOpcoes();
-                        infoDestino(opcao, endereco, porta);
-                        if(validarEntrada(opcao, endereco, porta)){
+                        res = infoDestino();
+                        opcao = res[0];
+                        endereco = res[1];
+                        porta = res[2];
+                        if (validarEntrada(opcao, endereco, porta)) {
                             mensagem = opcao;
                             destinatario = "/" + endereco + ":" + porta;
                             sendMessageTo(destinatario, mensagem);
@@ -153,11 +176,18 @@ public class ServerV3 {
                     }
                     case "1": {
                         controlarServer();
-                        infoDestino(opcao, endereco, porta);
-                        if(validarEntrada(opcao, endereco, porta)){
-                            mensagem = opcao;
-                            destinatario = "/" + endereco + ":" + porta;
-                            sendMessageTo(destinatario, mensagem);
+                        res = infoDestino();
+                        opcao = res[0];
+                        endereco = res[1];
+                        porta = res[2];
+                        if (validarEntrada(opcao, endereco, porta)) {
+                            mensagem = "req" + " " + opcao;
+                            ClientSocket socket = new ClientSocket(
+                                    new Socket(endereco, Integer.parseInt(porta)));
+                            socket.sendMessage(mensagem);
+                            Thread.sleep(300);
+                            System.out.println(socket.getMessage());
+                            socket.close();
                         }
                         break;
                     }
@@ -174,13 +204,15 @@ public class ServerV3 {
         }
     }
 
-    private void infoDestino(String opcao, String endereco, String porta) {
+    private String[] infoDestino() {
+        String[] res = new String[3];
         System.out.println("Opção (ex: 3)");
-        opcao = this.scan.next();
-        System.out.println("Endereço (ex: localhost | 127.0.0.1)");
-        endereco = this.scan.next();
+        res[0] = this.scan.next();
+        System.out.println("Endereço (ex: 127.0.0.1)");
+        res[1] = this.scan.next();
         System.out.println("Porta (ex: 8080)");
-        porta = this.scan.next();
+        res[2] = this.scan.next();
+        return res;
     }
 
     private boolean validarEntrada(String opcao, String endereco, String porta) {
