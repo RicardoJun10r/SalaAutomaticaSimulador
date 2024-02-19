@@ -19,7 +19,7 @@ public class ServerV3 {
 
     private String login;
 
-    private final Set<ClientSocket> USUARIOS = Collections.synchronizedSet(new HashSet<>());
+    private Set<ClientSocket> USUARIOS = Collections.synchronizedSet(new HashSet<>());
 
     private final Scanner scan;
 
@@ -59,13 +59,17 @@ public class ServerV3 {
         }
     }
 
-    private void listarUsuarios() {
+    private String listarUsuarios() {
+        StringBuilder stringBuilder = new StringBuilder();
         Iterator<ClientSocket> iterator = this.USUARIOS.iterator();
         while (iterator.hasNext()) {
             ClientSocket i = iterator.next();
-            System.out.println(
-                    i.getId() + " --> " + i.getSocketAddress());
+            if (i.getSocket().isConnected())
+                stringBuilder.append(i.getId()).append(" --> ").append(i.getSocketAddress()).append("\n");
+            else
+                this.USUARIOS.remove(i);
         }
+        return stringBuilder.toString();
     }
 
     private void mostrarOpcoes() {
@@ -116,8 +120,8 @@ public class ServerV3 {
                 "OPCOES DO SERVER\n" + //
                         "[0] --> DESLIGAR SALA\n" + //
                         "[1] --> LIGAR SALA\n" + //
-                        "[2] --> DESCRICAO DA SALA\n" + //
-                        "[3] --> LISTAR CONEXOES");
+                        "[2] --> LISTAR CONEXOES\n" + //
+                        "[3] --> DESCRICAO DA SALA");
     }
 
     private void mensagemCliente(ClientSocket clientSocket) throws IOException, InterruptedException {
@@ -127,6 +131,7 @@ public class ServerV3 {
                 if (mensagem.contains("req")) {
                     String[] req = mensagem.split(" ");
                     String dest;
+                    String res;
                     switch (req[1]) {
                         case "0":
                             dest = "/" + req[2] + ":" + req[3];
@@ -142,7 +147,7 @@ public class ServerV3 {
                             break;
                         case "2":
                             System.out.println("listando");
-                            String res = this.USUARIOS.toString();
+                            res = listarUsuarios();
                             sendMessageTo(clientSocket.getSocketAddress().toString(), res);
                             break;
                         default:
@@ -198,11 +203,16 @@ public class ServerV3 {
                         endereco = res[1];
                         porta = res[2];
                         if (validarEntrada(opcao, endereco, porta)) {
-                            System.out.println("Endereço da sala (ex: 127.0.0.1)");
-                            String endereco_destino = this.scan.next();
-                            System.out.println("Porta da sala (ex: 8008)");
-                            String porta_destino = this.scan.next();
-                            mensagem = "req" + " " + opcao + " " + endereco_destino + " " + porta_destino;
+                            System.out.println("Quer controlar uma sala especifíca (S | N) ?");
+                            String y_n = this.scan.next();
+                            mensagem = "req" + " " + opcao;
+                            if (y_n.equalsIgnoreCase("s")) {
+                                System.out.println("Endereço da sala (ex: 127.0.0.1)");
+                                String endereco_destino = this.scan.next();
+                                System.out.println("Porta da sala (ex: 8008)");
+                                String porta_destino = this.scan.next();
+                                mensagem += " " + endereco_destino + " " + porta_destino;
+                            }
                             ClientSocket socket = new ClientSocket(
                                     new Socket(endereco, Integer.parseInt(porta)));
                             this.USUARIOS.add(socket);
@@ -214,7 +224,7 @@ public class ServerV3 {
                         break;
                     }
                     case "2": {
-                        listarUsuarios();
+                        System.out.println(listarUsuarios());
                         break;
                     }
                     default: {
