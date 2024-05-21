@@ -106,9 +106,9 @@ public class ServerV4 {
                 "OPCOES DO MICROCONTROLADOR\n" + //
                         "[0] --> DESLIGAR SALA\n" + //
                         "[1] --> LIGAR SALA\n" + //
-                        "[2] --> DESLIGAR TODAS AS SALAS\n" + //
+                        "[2] --> DESCREVER TODAS AS SALAS\n" + //
                         "[3] --> LIGAR TODAS AS SALAS\n" + //
-                        "[4] --> DESCREVER TODAS AS SALAS\n" + //
+                        "[4] --> DESLIGAR TODAS AS SALAS\n" + //
                         "[5] --> DESCREVER SALA");
     }
 
@@ -146,24 +146,24 @@ public class ServerV4 {
                     switch (req[1]) {
                         case "0":
                             dest = "/" + req[2] + ":" + req[3];
-                            sendMessageTo(dest, "0");
+                            unicast(dest, "0");
                             System.out.println("deslistando");
-                            sendMessageTo(clientSocket.getSocketAddress().toString(), "Desligado!");
+                            unicast(clientSocket.getSocketAddress().toString(), "Desligado!");
                             break;
                         case "1":
                             dest = "/" + req[2] + ":" + req[3];
-                            sendMessageTo(dest, "1");
+                            unicast(dest, "1");
                             System.out.println("ligando " + clientSocket.getSocketAddress().toString());
-                            sendMessageTo(clientSocket.getSocketAddress().toString(), "Ligado!");
+                            unicast(clientSocket.getSocketAddress().toString(), "Ligado!");
                             break;
                         case "2":
                             System.out.println("listando");
                             res = listarUsuarios();
-                            sendMessageTo(clientSocket.getSocketAddress().toString(), res);
+                            unicast(clientSocket.getSocketAddress().toString(), res);
                             break;
                         default:
                             System.out.println("Erro!");
-                            sendMessageTo(clientSocket.getSocketAddress().toString(), "Erro!");
+                            unicast(clientSocket.getSocketAddress().toString(), "Erro!");
                             break;
                     }
                 } else if (msg[0].equals("res")) {
@@ -180,12 +180,7 @@ public class ServerV4 {
 
     private void sendOrder() throws IOException, InterruptedException {
         synchronized (lock) {
-            String opcao;
-            String mensagem;
-            String id = "";
-            String endereco = "";
-            String porta = "";
-            String destinatario;
+            String opcao, mensagem, id, endereco, porta;
             String[] res;
 
             while (true) {
@@ -199,11 +194,16 @@ public class ServerV4 {
                 switch (opcao) {
                     case "0": {
                         microcontroladorOpcoes();
-                        res = infoDestino();
-                        opcao = res[0];
-                        id = res[1];
-                        if (validarEntrada(opcao, id)) {
-                            sendMessageTo(id, opcao);
+                        System.out.println("Opção (ex: 3)");
+                        opcao = this.scan.next();
+                        if(Integer.parseInt(opcao) > 2){
+                            System.out.println("ID da sala (ex: 0)");
+                            id = this.scan.next();
+                            if(validarEntrada(opcao, id)){
+                                unicast(id, opcao);
+                            }
+                        } else{
+                            broadcast(opcao);
                         }
                         break;
                     }
@@ -270,9 +270,19 @@ public class ServerV4 {
         return flag;
     }
 
-    private void sendMessageTo(String id, String msg) {
+    private void unicast(String id, String msg) {
         this.USUARIOS.get(
             Integer.parseInt(id)).sendMessage(msg);
+    }
+
+    private void broadcast(String msg){
+        Set<Integer> chaves = this.USUARIOS.keySet();
+        Iterator<Integer> iterator = chaves.iterator();
+        Integer index;
+        while (iterator.hasNext()) {
+            index = iterator.next();
+            this.USUARIOS.get(index).sendMessage(msg);
+        }
     }
 
 }
