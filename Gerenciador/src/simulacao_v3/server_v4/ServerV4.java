@@ -106,10 +106,10 @@ public class ServerV4 {
                 "OPCOES DO MICROCONTROLADOR\n" + //
                         "[0] --> DESLIGAR SALA\n" + //
                         "[1] --> LIGAR SALA\n" + //
-                        "[2] --> DESCREVER TODAS AS SALAS\n" + //
+                        "[2] --> DESCREVER SALA\n" + //
                         "[3] --> LIGAR TODAS AS SALAS\n" + //
                         "[4] --> DESLIGAR TODAS AS SALAS\n" + //
-                        "[5] --> DESCREVER SALA");
+                        "[5] --> DESCREVER TODAS AS SALAS");
     }
 
     private void controlarServer() {
@@ -196,7 +196,7 @@ public class ServerV4 {
                         microcontroladorOpcoes();
                         System.out.println("Opção (ex: 3)");
                         opcao = this.scan.next();
-                        if(Integer.parseInt(opcao) > 2){
+                        if(Integer.parseInt(opcao) <= 2){
                             System.out.println("ID da sala (ex: 0)");
                             id = this.scan.next();
                             if(validarEntrada(opcao, id)){
