@@ -33,7 +33,7 @@ public class ArCondicionado implements InterAparelho {
 
     @Override
     public String Descricao() {
-        return "Ar-condicionado de ID = [ " + ID + " ] | Status = [ " + this.status + " ]\n";
+        return "Ar-condicionado de ID = [ " + ID + " ] | Status = [ " + this.status + " ]*";
     }
     
 }

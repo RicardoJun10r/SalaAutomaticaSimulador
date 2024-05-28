@@ -86,6 +86,7 @@ public class ServerV4 {
                         "[0] --> USAR MICROCONTROLADOR\n" + //
                         "[1] --> CONECTAR-SE A OUTRO SERVIDOR\n" + //
                         "[2] --> LISTAR CONEXOES\n" + //
+                        "[3] --> ADICIONAR CONEXÃO\n" + //
                         "OPCAO:");
     }
 
@@ -168,7 +169,7 @@ public class ServerV4 {
                     }
                 } else if (msg[0].equals("res")) {
                     System.out.println(
-                            msg[1] + " [ " + msg[2] + " ]: " + msg[3]);
+                            msg[1] + " [ " + msg[2] + " ]: " + msg[3].replace('*', '\n'));
                 } else {
                     System.out.println("ERRO: MENSGAGEM FORA DO PADRÃO!");
                 }
@@ -196,13 +197,13 @@ public class ServerV4 {
                         microcontroladorOpcoes();
                         System.out.println("Opção (ex: 3)");
                         opcao = this.scan.next();
-                        if(Integer.parseInt(opcao) <= 2){
+                        if (Integer.parseInt(opcao) <= 2) {
                             System.out.println("ID da sala (ex: 0)");
                             id = this.scan.next();
-                            if(validarEntrada(opcao, id)){
+                            if (validarEntrada(opcao, id)) {
                                 unicast(id, opcao);
                             }
-                        } else{
+                        } else {
                             broadcast(opcao);
                         }
                         break;
@@ -213,29 +214,20 @@ public class ServerV4 {
                         opcao = res[0];
                         endereco = res[1];
                         porta = res[2];
-                        if (validarEntrada(opcao, endereco, porta)) {
-                            System.out.println("Quer controlar uma sala especifíca (S | N) ?");
-                            String y_n = this.scan.next();
-                            mensagem = "req" + " " + opcao;
-                            if (y_n.equalsIgnoreCase("s")) {
-                                System.out.println("Endereço da sala (ex: 127.0.0.1)");
-                                String endereco_destino = this.scan.next();
-                                System.out.println("Porta da sala (ex: 8008)");
-                                String porta_destino = this.scan.next();
-                                mensagem += " " + endereco_destino + " " + porta_destino;
-                            }
-                            ClientSocket socket = new ClientSocket(
-                                    new Socket(endereco, Integer.parseInt(porta)));
-                            addConnection(socket);
-                            socket.sendMessage(mensagem);
-                            Thread.sleep(300);
-                            System.out.println(socket.getMessage());
-                            socket.close();
-                        }
                         break;
                     }
                     case "2": {
                         System.out.println(listarUsuarios());
+                        break;
+                    }
+                    case "3": {
+                        System.out.println("Digite o endereço destino (ex: 127.0.0.1)");
+                        endereco = this.scan.next();
+                        System.out.println("Digite a porta de destino (ex: 1111)");
+                        porta = this.scan.next();
+                        ClientSocket socket = new ClientSocket(
+                                new Socket(endereco, Integer.parseInt(porta)));
+                        addConnection(socket);
                         break;
                     }
                     default: {
@@ -272,10 +264,10 @@ public class ServerV4 {
 
     private void unicast(String id, String msg) {
         this.USUARIOS.get(
-            Integer.parseInt(id)).sendMessage(msg);
+                Integer.parseInt(id)).sendMessage(msg);
     }
 
-    private void broadcast(String msg){
+    private void broadcast(String msg) {
         Set<Integer> chaves = this.USUARIOS.keySet();
         Iterator<Integer> iterator = chaves.iterator();
         Integer index;

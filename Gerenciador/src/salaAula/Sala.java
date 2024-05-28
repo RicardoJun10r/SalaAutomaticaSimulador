@@ -40,7 +40,7 @@ public class Sala {
 
     public String mostrarAparelhos(){
         String mensagem = "";
-        mensagem += "Sala com [ " + (NUMERO_APARELHOS*2) + " ] aparelhos\n";
+        mensagem += "Sala com [ " + (NUMERO_APARELHOS*2) + " ] aparelhos*";
         Iterator<InterAparelho> iterator = this.aparelhos.iterator();
         while (iterator.hasNext()) {
             InterAparelho i = iterator.next();

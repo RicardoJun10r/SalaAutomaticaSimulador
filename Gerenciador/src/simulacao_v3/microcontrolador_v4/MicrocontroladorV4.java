@@ -43,29 +43,29 @@ public class MicrocontroladorV4 implements Runnable {
     }
 
     private void executeCommand(String option) {
-        String headers = "res;MC;" + clientSocket.getSocket().getLocalSocketAddress().toString() + ";";
         switch (option) {
-            case "0": {
-                sendMessage(headers + "ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos());
+            case "0", "4": {
+                unicast("ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos());
                 break;
             }
-            case "1": {
-                sendMessage(headers + "ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos());
+            case "1", "3": {
+                unicast("ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos());
                 break;
             }
-            case "2": {
-                sendMessage(headers + "ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos());
+            case "2", "5": {
+                unicast("ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos());
                 break;
             }
             default: {
-                sendMessage(headers + "ID = [ " + ID + " ]: " + "ERRO: opção inválida!");
+                unicast("ID = [ " + ID + " ]: " + "ERRO: opção inválida!");
                 break;
             }
         }
     }
 
-    private void sendMessage(String mensagem) {
-        this.clientSocket.sendMessage(mensagem);
+    private void unicast(String mensagem) {
+        String headers = "res;MC;" + clientSocket.getSocket().getLocalSocketAddress().toString() + ";";
+        this.clientSocket.sendMessage(headers + mensagem);
     }
 
     public void start() throws IOException, UnknownHostException {
