@@ -19,6 +19,8 @@ public class MicrocontroladorV4 implements Runnable {
 
     private final Sala SALA;
 
+    private final String HEADERS = "res;MC;" + clientSocket.getSocket().getLocalSocketAddress().toString() + ";";
+
     public MicrocontroladorV4(String id, Sala sala, String ENDERECO_SERVER, int PORTA_SERVER) {
         this.ID = id;
         this.SALA = sala;
@@ -37,7 +39,33 @@ public class MicrocontroladorV4 implements Runnable {
             if ((mensagem = this.clientSocket.getMessage()) != null) {
                 System.out.println(
                         "Mensagem do servidor: " + mensagem);
-                executeCommand(mensagem);
+                        if(mensagem.contains("req")){
+                            forward(mensagem);
+                        } else {
+                            executeCommand(mensagem);
+                        }
+            }
+        }
+    }
+
+    private void forward(String mensagem){
+        String[]msg = mensagem.split(";");
+        switch (msg[0]) {
+            case "0", "4": {
+                unicast("fwd;" + msg[3] + "ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos());
+                break;
+            }
+            case "1", "3": {
+                unicast("fwd;" + msg[3] + "ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos());
+                break;
+            }
+            case "2", "5": {
+                unicast("fwd;" + msg[3] + "ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos());
+                break;
+            }
+            default: {
+                unicast("fwd;" + msg[3] + "ID = [ " + ID + " ]: " + "ERRO: opção inválida!");
+                break;
             }
         }
     }
@@ -45,27 +73,26 @@ public class MicrocontroladorV4 implements Runnable {
     private void executeCommand(String option) {
         switch (option) {
             case "0", "4": {
-                unicast("ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos());
+                unicast(HEADERS + "ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos());
                 break;
             }
             case "1", "3": {
-                unicast("ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos());
+                unicast(HEADERS + "ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos());
                 break;
             }
             case "2", "5": {
-                unicast("ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos());
+                unicast(HEADERS + "ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos());
                 break;
             }
             default: {
-                unicast("ID = [ " + ID + " ]: " + "ERRO: opção inválida!");
+                unicast(HEADERS + "ID = [ " + ID + " ]: " + "ERRO: opção inválida!");
                 break;
             }
         }
     }
 
     private void unicast(String mensagem) {
-        String headers = "res;MC;" + clientSocket.getSocket().getLocalSocketAddress().toString() + ";";
-        this.clientSocket.sendMessage(headers + mensagem);
+        this.clientSocket.sendMessage(mensagem);
     }
 
     public void start() throws IOException, UnknownHostException {

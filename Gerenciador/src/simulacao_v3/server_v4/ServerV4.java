@@ -71,7 +71,7 @@ public class ServerV4 {
         Integer index;
         while (iterator.hasNext()) {
             index = iterator.next();
-            users += index + " -> " + this.USUARIOS.get(index).getSocketAddress().toString() + "\n";
+            users += index + " -> " + this.USUARIOS.get(index).getSocketAddress().toString() + "*";
         }
         return users;
     }
@@ -103,7 +103,7 @@ public class ServerV4 {
                 "                                                                                                \n" + //
                 "                                                                                                \n" + //
                 "");
-        System.out.println(listarUsuarios());
+        System.out.println(listarUsuarios().replace('*', '\n'));
         System.out.println(
                 "OPCOES DO MICROCONTROLADOR\n" + //
                         "[0] --> DESLIGAR SALA\n" + //
@@ -125,7 +125,7 @@ public class ServerV4 {
                 "                                       \n" + //
                 "                                       \n" + //
                 "");
-        System.out.println(listarUsuarios());
+        System.out.println(listarUsuarios().replace('*', '\n'));
         System.out.println(
                 "OPCOES DO SERVER\n" + //
                         "[0] --> DESLIGAR SALA\n" + //
@@ -145,45 +145,39 @@ public class ServerV4 {
                 String[] msg = mensagem.split(";");
                 if (msg[0].equals("req")) {
                     String ip = msg[2], opcao = msg[3];
-                    if(Integer.parseInt(opcao) <= 2){
-                        switch (opcao) {
-                            case "0":
-                                System.out.println("TO-DO");
-                                break;
-                            case "1":
-                                System.out.println("TO-DO");
-                                break;
-                            case "2":
-                                System.out.println("TO-DO");
-                                break;
-                            default:
-                                System.out.println("ERRO NA MENSAGEM");
-                                break;
-                        }
-                    } else {
-                        switch (opcao) {
-                            case "3":
-                                System.out.println("TO-DO");
-                                break;
-                            case "4":
-                                System.out.println("TO-DO");
-                                break;
-                            case "5":
-                                System.out.println("TO-DO");
-                                break;
-                            case "6":
-                                String conn = listarUsuarios();
-                                clientSocket.sendMessage("res;PC;" + ip + ";" + conn);
-                                break;
-                            default:
-                                System.out.println("ERRO NA MENSAGEM");
-                                break;
-                        }
+                    switch (opcao) {
+                        case "0":
+                            System.out.println("TO-DO");
+                            break;
+                        case "1":
+                            System.out.println("TO-DO");
+                            break;
+                        case "2":
+                            System.out.println("TO-DO");
+                            break;
+                        case "3":
+                            System.out.println("TO-DO");
+                            break;
+                        case "4":
+                            System.out.println("TO-DO");
+                            break;
+                        case "5":
+                            broadcast("5;req;PC;" + ip);
+                            break;
+                        case "6":
+                            String conn = listarUsuarios();
+                            __unicast__(ip,
+                                    "res;PC;" + this.serverSocket.getLocalSocketAddress().toString() + ";" + conn);
+                            break;
+                        default:
+                            System.out.println("ERRO NA MENSAGEM");
+                            break;
                     }
-
                 } else if (msg[0].equals("res")) {
                     System.out.println(
                             msg[1] + " [ " + msg[2] + " ]: " + msg[3].replace('*', '\n'));
+                } else if(msg[0].equals("fwd")){
+                    __unicast__(msg[1], msg[2]);
                 } else {
                     System.out.println("ERRO: MENSGAGEM FORA DO PADRÃO!");
                 }
@@ -231,17 +225,19 @@ public class ServerV4 {
                             System.out.println("ID da sala (ex: 0)");
                             sala = this.scan.next();
                             if (validarEntrada(opcao, id)) {
-                                unicast(id, "req;PC;" + this.serverSocket.getLocalSocketAddress().toString() + ";" + opcao + ";" + sala);
+                                unicast(id, "req;PC;" + this.serverSocket.getLocalSocketAddress().toString() + ";"
+                                        + opcao + ";" + sala);
                             }
                         } else {
                             ClientSocket socket = findById(id);
-                            System.out.println("TESTE: [ " + this.serverSocket.getLocalSocketAddress().toString() + " ] <=> [ " +  socket.getSocket().getLocalSocketAddress().toString() + " ]");
-                            unicast(id, "req;PC;" + socket.getSocket().getLocalSocketAddress().toString() + ";" + opcao);
+                            System.out.println("TESTE: [ " + this.serverSocket.getLocalSocketAddress().toString()
+                                    + " ] <=> [ " + socket.getSocket().getLocalSocketAddress().toString() + " ]");
+                            unicast(id, "req;PC;" + this.serverSocket.getLocalSocketAddress().toString() + ";" + opcao);
                         }
                         break;
                     }
                     case "2": {
-                        System.out.println(listarUsuarios());
+                        System.out.println(listarUsuarios().replace('*', '\n'));
                         break;
                     }
                     case "3": {
@@ -263,7 +259,7 @@ public class ServerV4 {
         }
     }
 
-    private ClientSocket findById(String id){
+    private ClientSocket findById(String id) {
         return this.USUARIOS.get(Integer.parseInt(id));
     }
 
@@ -277,6 +273,21 @@ public class ServerV4 {
     private void unicast(String id, String msg) {
         this.USUARIOS.get(
                 Integer.parseInt(id)).sendMessage(msg);
+    }
+
+    private void __unicast__(String ip, String msg) {
+        String[] address = ip.split(":");
+        int index = address[0].indexOf("/");
+        String host = address[0].substring(0, index);
+        int port = Integer.parseInt(address[1]);
+        System.out.println(host + ":" + port);
+        try {
+            ClientSocket socket = new ClientSocket(new Socket(host, port));
+            socket.sendMessage(msg);
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void broadcast(String msg) {
