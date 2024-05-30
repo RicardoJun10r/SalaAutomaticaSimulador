@@ -141,6 +141,7 @@ public class ServerV4 {
         String mensagem;
         try {
             while ((mensagem = clientSocket.getMessage()) != null) {
+                System.out.println("DEBUG: " + mensagem);
                 String[] msg = mensagem.split(";");
                 if (msg[0].equals("req")) {
                     String ip = msg[2], opcao = msg[3];
@@ -172,7 +173,7 @@ public class ServerV4 {
                                 break;
                             case "6":
                                 String conn = listarUsuarios();
-                                unicast(opcao, conn);
+                                clientSocket.sendMessage("res;PC;" + ip + ";" + conn);
                                 break;
                             default:
                                 System.out.println("ERRO NA MENSAGEM");
@@ -234,8 +235,8 @@ public class ServerV4 {
                             }
                         } else {
                             ClientSocket socket = findById(id);
-                            System.out.println("TESTE: [ " + this.serverSocket.getLocalSocketAddress().toString() + " ] <=> [ " +  socket.getSocketAddress().toString() + " ]");
-                            unicast(id, "req;PC;" + socket.getSocketAddress().toString() + ";" + opcao);
+                            System.out.println("TESTE: [ " + this.serverSocket.getLocalSocketAddress().toString() + " ] <=> [ " +  socket.getSocket().getLocalSocketAddress().toString() + " ]");
+                            unicast(id, "req;PC;" + socket.getSocket().getLocalSocketAddress().toString() + ";" + opcao);
                         }
                         break;
                     }
