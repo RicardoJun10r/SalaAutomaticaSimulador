@@ -10,7 +10,7 @@ public class MainMicrocontroladorV4 {
 
         sala.encherSala();
 
-        MicrocontroladorV4 microcontroladorSocket = new MicrocontroladorV4("2", sala, "localhost", 2000);
+        MicrocontroladorV4 microcontroladorSocket = new MicrocontroladorV4("2", sala, "localhost", 3000);
 
         try {
             microcontroladorSocket.start();

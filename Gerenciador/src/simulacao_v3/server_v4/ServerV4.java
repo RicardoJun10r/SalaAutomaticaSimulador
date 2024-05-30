@@ -131,8 +131,8 @@ public class ServerV4 {
                         "[0] --> DESLIGAR SALA\n" + //
                         "[1] --> LIGAR SALA\n" + //
                         "[2] --> DESCREVER SALA\n" + //
-                        "[3] --> DESLIGAR TODAS AS SALAS\n" + //
-                        "[4] --> LIGAR TODAS AS SALAS\n" + //
+                        "[3] --> LIGAR TODAS AS SALAS\n" + //
+                        "[4] --> DESLIGAR TODAS AS SALAS\n" + //
                         "[5] --> DESCREVER TODAS AS SALAS\n" + //
                         "[6] --> LISTAR CONEXOES");
     }
@@ -141,25 +141,27 @@ public class ServerV4 {
         String mensagem;
         try {
             while ((mensagem = clientSocket.getMessage()) != null) {
-                System.out.println("DEBUG: " + mensagem);
                 String[] msg = mensagem.split(";");
                 if (msg[0].equals("req")) {
-                    String ip = msg[2], opcao = msg[3];
+                    String ip = msg[2], opcao = msg[3], id;
                     switch (opcao) {
                         case "0":
-                            System.out.println("TO-DO");
+                            id = msg[4];
+                            unicast(id, "0;req;PC;" + ip);
                             break;
                         case "1":
-                            System.out.println("TO-DO");
+                            id = msg[4];
+                            unicast(id, "1;req;PC;" + ip);
                             break;
                         case "2":
-                            System.out.println("TO-DO");
+                            id = msg[4];
+                            unicast(id, "2;req;PC;" + ip);
                             break;
                         case "3":
-                            System.out.println("TO-DO");
+                            broadcast("3;req;PC;" + ip);
                             break;
                         case "4":
-                            System.out.println("TO-DO");
+                            broadcast("4;req;PC;" + ip);
                             break;
                         case "5":
                             broadcast("5;req;PC;" + ip);
@@ -177,7 +179,7 @@ public class ServerV4 {
                     System.out.println(
                             msg[1] + " [ " + msg[2] + " ]: " + msg[3].replace('*', '\n'));
                 } else if(msg[0].equals("fwd")){
-                    __unicast__(msg[1], msg[2]);
+                    __unicast__(msg[1], "res;PC;" + this.serverSocket.getLocalSocketAddress().toString() + ";" + msg[2]);
                 } else {
                     System.out.println("ERRO: MENSGAGEM FORA DO PADRÃO!");
                 }
@@ -189,7 +191,7 @@ public class ServerV4 {
 
     private void sendOrder() throws IOException, InterruptedException {
         synchronized (lock) {
-            String opcao, mensagem, id, sala, endereco, porta;
+            String opcao, id, sala, endereco, porta;
 
             while (true) {
 
