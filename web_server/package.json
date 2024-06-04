@@ -1,0 +1,15 @@
+{
+  "name": "gerenciador_app",
+  "version": "1.0.0",
+  "description": "Servico web",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Bolsa",
+    "faculdade"
+  ],
+  "author": "Ricardo Junior",
+  "license": "ISC"
+}
