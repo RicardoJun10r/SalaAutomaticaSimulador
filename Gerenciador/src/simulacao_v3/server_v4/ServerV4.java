@@ -1,6 +1,7 @@
 package simulacao_v3.server_v4;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collections;
@@ -239,6 +240,7 @@ public class ServerV4 {
                         break;
                     }
                     case "2": {
+                        node_server();
                         System.out.println(listarUsuarios().replace('*', '\n'));
                         break;
                     }
@@ -275,6 +277,18 @@ public class ServerV4 {
     private void unicast(String id, String msg) {
         this.USUARIOS.get(
                 Integer.parseInt(id)).sendMessage(msg);
+    }
+
+    private void node_server(){
+        try {
+            ClientSocket node = new ClientSocket(
+                new Socket("127.0.0.1", 3000)
+            );
+            node.sendMessage("mensagem do servidor Java");
+            node.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void __unicast__(String ip, String msg) {
