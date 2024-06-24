@@ -282,9 +282,9 @@ public class ServerV4 {
     private void node_server(){
         try {
             ClientSocket node = new ClientSocket(
-                new Socket("127.0.0.1", 3000)
+                new Socket("127.0.0.1", 4000)
             );
-            node.sendMessage("mensagem do servidor Java");
+            node.sendMessage("connection mensagem do servidor Java");
             node.close();
         } catch (Exception e) {
             e.printStackTrace();
