@@ -27,10 +27,13 @@ public class ServerV4 {
 
     private Integer CONTADOR;
 
-    public ServerV4(int PORTA) {
+    private Boolean web_server;
+
+    public ServerV4(int PORTA, Boolean web_server) {
         CONTADOR = 0;
         this.scan = new Scanner(System.in);
         this.PORTA = PORTA;
+        this.web_server = web_server;
     }
 
     public void start() throws IOException {
@@ -278,14 +281,26 @@ public class ServerV4 {
     }
 
     private void node_server(String msg){
-        try {
-            ClientSocket node = new ClientSocket(
-                new Socket("127.0.0.1", 4000)
-            );
-            node.sendMessage(msg);
-            node.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if(web_server){
+            try {
+                ClientSocket node = new ClientSocket(
+                    new Socket("https://main--lucky-speculoos-bed9b6.netlify.app/web_server/index", 443)
+                );
+                node.sendMessage(msg);
+                node.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                ClientSocket node = new ClientSocket(
+                    new Socket("127.0.0.1", 4000)
+                );
+                node.sendMessage(msg);
+                node.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
