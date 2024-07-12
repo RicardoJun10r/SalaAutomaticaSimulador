@@ -265,10 +265,6 @@ public class ServerV4 {
         }
     }
 
-    private ClientSocket findById(String id) {
-        return this.USUARIOS.get(Integer.parseInt(id));
-    }
-
     private boolean validarEntrada(String opcao, String id) {
         boolean flag = true;
         if (opcao.isEmpty() || id.isEmpty())
