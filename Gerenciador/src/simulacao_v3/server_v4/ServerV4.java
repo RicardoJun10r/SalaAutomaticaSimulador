@@ -211,9 +211,11 @@ public class ServerV4 {
                             System.out.println("ID da sala (ex: 0)");
                             id = this.scan.next();
                             if (validarEntrada(opcao, id)) {
+                                node_server(this.serverSocket.getLocalSocketAddress().toString() + ";0;" + opcao + ";" + USUARIOS.get(Integer.parseInt(id)).getSocketAddress().toString());
                                 unicast(id, opcao);
                             }
                         } else {
+                            node_server(this.serverSocket.getLocalSocketAddress().toString() + ";0;" + opcao + ";TODOS");
                             broadcast(opcao);
                         }
                         break;
@@ -228,19 +230,18 @@ public class ServerV4 {
                             System.out.println("ID da sala (ex: 0)");
                             sala = this.scan.next();
                             if (validarEntrada(opcao, id)) {
+                                node_server(this.serverSocket.getLocalSocketAddress().toString() + ";1;" + opcao + ";" + USUARIOS.get(Integer.parseInt(id)).getSocketAddress().toString());
                                 unicast(id, "req;PC;" + this.serverSocket.getLocalSocketAddress().toString() + ";"
                                         + opcao + ";" + sala);
                             }
                         } else {
-                            ClientSocket socket = findById(id);
-                            System.out.println("TESTE: [ " + this.serverSocket.getLocalSocketAddress().toString()
-                                    + " ] <=> [ " + socket.getSocket().getLocalSocketAddress().toString() + " ]");
+                            node_server(this.serverSocket.getLocalSocketAddress().toString() + ";1;" + opcao + ";TODOS");
                             unicast(id, "req;PC;" + this.serverSocket.getLocalSocketAddress().toString() + ";" + opcao);
                         }
                         break;
                     }
                     case "2": {
-                        node_server();
+                        node_server(this.serverSocket.getLocalSocketAddress().toString() + ";2;listou todos os usuarios;TODOS");
                         System.out.println(listarUsuarios().replace('*', '\n'));
                         break;
                     }
@@ -252,6 +253,7 @@ public class ServerV4 {
                         ClientSocket socket = new ClientSocket(
                                 new Socket(endereco, Integer.parseInt(porta)));
                         addConnection(socket);
+                        node_server(this.serverSocket.getLocalSocketAddress().toString() + ";3;conectou-se a outro server;" + endereco + ":" + porta);
                         break;
                     }
                     default: {
@@ -279,12 +281,12 @@ public class ServerV4 {
                 Integer.parseInt(id)).sendMessage(msg);
     }
 
-    private void node_server(){
+    private void node_server(String msg){
         try {
             ClientSocket node = new ClientSocket(
                 new Socket("127.0.0.1", 4000)
             );
-            node.sendMessage("connection mensagem do servidor Java");
+            node.sendMessage(msg);
             node.close();
         } catch (Exception e) {
             e.printStackTrace();

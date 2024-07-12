@@ -35,7 +35,11 @@ function resposta(req, res) {
 // Configuração do servidor TCP
 var tcpServer = net.createServer(function (socket) {
     console.log('Conexão TCP recebida de ' + socket.remoteAddress + ':' + socket.remotePort);
-
+    usuarios.push({
+        endereco: socket.remoteAddress,
+        porta: socket.remotePort
+    });
+    
     socket.on('data', function (data) {
         var mensagem = data.toString();
         console.log('Mensagem recebida do servidor Java: ' + mensagem);
