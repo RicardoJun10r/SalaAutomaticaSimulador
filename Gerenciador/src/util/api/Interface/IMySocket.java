@@ -1,4 +1,5 @@
-package util;
+package util.api.Interface;
+
 
 public abstract class IMySocket {
     
