@@ -1,1 +1,6 @@
-{}
+{
+    "java.project.sourcePaths": [
+        "Gerenciador/src"
+    ],
+    "java.project.referencedLibraries": []
+}

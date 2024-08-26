@@ -29,6 +29,7 @@ public class SocketClientSide extends IMySocket {
         super(endereco, porta);
         this.entrada_saida = new SocketIO();
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
+        this.socket = new Socket();
     }
 
     public SocketClientSide(Socket socket){
@@ -52,17 +53,17 @@ public class SocketClientSide extends IMySocket {
 
     public void configurarMetodoEnviar(ISocketWriteFunction metodo_enviar){ this.metodo_enviar = metodo_enviar; }
 
-    public void configurarEntradaSaida(int opcao) {
+    public void configurarEntradaSaida(SocketType opcao) {
         switch (opcao) {
-            case 1: {
+            case TEXTO: {
                 this.entrada_saida.configurarTexto(this.socket);
                 break;
             }
-            case 2: {
+            case OBJETO: {
                 this.entrada_saida.configurarObjeto(this.socket);
                 break;
             }
-            case 3: {
+            case TODOS: {
                 this.entrada_saida.configurarTexto(this.socket);
                 this.entrada_saida.configurarObjeto(this.socket);
                 break;
@@ -97,13 +98,20 @@ public class SocketClientSide extends IMySocket {
 
     public void enviar(){
         if(this.metodo_enviar != null){
-            this.executorService.submit(
+            new Thread(
                 () -> {
                     while (true) {
                         this.metodo_enviar.enviar();
                     }
                 }
-            );
+            ).start();
+            // this.executorService.submit(
+            //     () -> {
+            //         while (true) {
+            //             this.metodo_enviar.enviar();
+            //         }
+            //     }
+            // );
         } else {
             System.out.println("ERRO: MÉTODO DO TIPO [ISocketWriteFunction] NÃO CONFIGURADO!");
         }
@@ -111,13 +119,20 @@ public class SocketClientSide extends IMySocket {
 
     public void escutar(){
         if(this.metodo_escutar != null){
-            this.executorService.submit(
+            new Thread(
                 () -> {
                     while (true) {
                         this.metodo_escutar.escutar();
                     }
                 }
-            );
+            ).start();
+            // this.executorService.submit(
+            //     () -> {
+            //         while (true) {
+            //             this.metodo_escutar.escutar();
+            //         }
+            //     }
+            // );
         } else {
             System.out.println("ERRO: MÉTODO DO TIPO [ISocketListenFunction] NÃO CONFIGURADO!");
         }
