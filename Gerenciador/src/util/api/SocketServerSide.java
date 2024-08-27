@@ -41,9 +41,11 @@ public class SocketServerSide extends IMySocket {
         this.contador_interno = 0;
     }
 
-    public Queue<SocketClientSide> Fila(){ return this.fila_escuta; }
+    public Queue<SocketClientSide> Fila() {
+        return this.fila_escuta;
+    }
 
-    public void iniciar(){
+    public void iniciar() {
         try {
             this.server = new ServerSocket(super.getPorta(), 50, InetAddress.getByName(super.getEndereco()));
             System.out.println("INICIADO SERVIDOR NO IP: [" + super.getEndereco() + ":" + super.getPorta() + "]...");
@@ -52,59 +54,45 @@ public class SocketServerSide extends IMySocket {
         }
     }
 
-    public void configurarMetodoEscutar(ISocketListenFunction metodo_escutar){ this.metodo_escutar = metodo_escutar; }
+    public void configurarMetodoEscutar(ISocketListenFunction metodo_escutar) {
+        this.metodo_escutar = metodo_escutar;
+    }
 
-    public void configurarMetodoEnviar(ISocketWriteFunction metodo_enviar){ this.metodo_enviar = metodo_enviar; }
+    public void configurarMetodoEnviar(ISocketWriteFunction metodo_enviar) {
+        this.metodo_enviar = metodo_enviar;
+    }
 
-    public void enviar(){
-        if(this.metodo_enviar != null){
+    public void enviar() {
+        if (this.metodo_enviar != null) {
             this.executorService.submit(
-                () -> {
-                    while (true) {
-                        this.metodo_enviar.enviar();
-                    }
-                }
-            );
+                    () -> {
+                        while (true) {
+                            this.metodo_enviar.enviar();
+                        }
+                    });
         } else {
             System.out.println("ERRO: MÉTODO DO TIPO [ISocketWriteFunction] NÃO CONFIGURADO!");
         }
     }
 
-    public void escutar(){
-        if(this.metodo_escutar != null){
+    public void escutar() {
+        if (this.metodo_escutar != null) {
             System.out.println("ESCUTANDO...");
-            new Thread(
-                () -> {
-                    while (true) {
-                        try {
-                            SocketClientSide socketClientSide = new SocketClientSide(this.server.accept());
-                            adicionarConexao(socketClientSide);
-                            this.metodo_escutar.escutar();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+            while (true) {
+                try {
+                    SocketClientSide socketClientSide = new SocketClientSide(this.server.accept());
+                    adicionarConexao(socketClientSide);
+                    this.executorService.submit(() -> this.metodo_escutar.escutar());
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            ).start();
-            // this.executorService.submit(
-            //     () -> {
-            //         while (true) {
-            //             try {
-            //                 SocketClientSide socketClientSide = new SocketClientSide(this.server.accept());
-            //                 adicionarConexao(socketClientSide);
-            //                 this.metodo_escutar.escutar();
-            //             } catch (IOException e) {
-            //                 e.printStackTrace();
-            //             }
-            //         }
-            //     }
-            // );
+            }
         } else {
             System.out.println("ERRO: MÉTODO DO TIPO [ISocketListenFunction] NÃO CONFIGURADO!");
         }
     }
 
-    public void fechar(){
+    public void fechar() {
         try {
             this.executorService.close();
             this.server.close();
@@ -113,32 +101,32 @@ public class SocketServerSide extends IMySocket {
         }
     }
 
-    private void adicionarConexao(SocketClientSide nova_conexao){
+    private void adicionarConexao(SocketClientSide nova_conexao) {
         nova_conexao.configurarEntradaSaida(SocketType.TEXTO);
         this.conexoes.put(contador_interno, nova_conexao);
         this.fila_escuta.add(nova_conexao);
         this.contador_interno++;
     }
 
-    public void unicast(Integer id, String msg){
+    public void unicast(Integer id, String msg) {
         this.conexoes.get(id).enviarMensagem(msg);
     }
 
-    public void multicast(Integer[] id, String msg){
-        for(int i = 0; i < id.length; i++)
-            if(this.conexoes.get(id[i]) != null) this.conexoes.get(id[i]).enviarMensagem(msg);
+    public void multicast(Integer[] id, String msg) {
+        for (int i = 0; i < id.length; i++)
+            if (this.conexoes.get(id[i]) != null)
+                this.conexoes.get(id[i]).enviarMensagem(msg);
     }
 
-    public void broadcast(String msg){
+    public void broadcast(String msg) {
         this.conexoes.forEach(
-            (id, conexao) -> conexao.enviarMensagem(msg)
-        );
+                (id, conexao) -> conexao.enviarMensagem(msg));
     }
 
-    public void listarConexoes(){
+    public void listarConexoes() {
         this.conexoes.forEach(
-            (id, conexao) -> System.out.println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getPorta() + "]")
-        );
-    } 
+                (id, conexao) -> System.out
+                        .println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getPorta() + "]"));
+    }
 
 }

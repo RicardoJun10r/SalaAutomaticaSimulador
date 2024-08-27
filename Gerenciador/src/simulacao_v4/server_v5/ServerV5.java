@@ -29,12 +29,15 @@ public class ServerV5 {
         this.fila = this.server.Fila();
 
         this.metodo_escutar = () -> {
-            SocketClientSide cliente = fila.poll();
-            if(cliente != null){
-                String line;
-                if((line = cliente.receberMensagem()) != null){
-                    System.out.println("RECEBIDO DE [" + cliente.getEndereco() + "]: " + line);
-                    this.server.broadcast(cliente.getEndereco() + " " + line);
+            while (true) {
+                SocketClientSide cliente = fila.poll();
+                if(cliente != null){
+                    String line;
+                    while((line = cliente.receberMensagem()) != null){
+                        System.out.println("RECEBIDO DE [" + cliente.getEndereco() + "]: " + line);
+                        this.server.broadcast(cliente.getEndereco() + " " + line);
+                        this.server.listarConexoes();
+                    }
                 }
             }
         };

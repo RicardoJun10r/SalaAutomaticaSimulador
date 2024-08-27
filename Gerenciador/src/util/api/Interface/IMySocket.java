@@ -1,6 +1,5 @@
 package util.api.Interface;
 
-
 public abstract class IMySocket {
     
     private int porta;
