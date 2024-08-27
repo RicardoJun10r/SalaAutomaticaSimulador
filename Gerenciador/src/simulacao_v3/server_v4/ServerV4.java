@@ -1,7 +1,6 @@
 package simulacao_v3.server_v4;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collections;

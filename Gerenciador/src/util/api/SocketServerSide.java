@@ -23,8 +23,6 @@ public class SocketServerSide extends IMySocket {
 
     private Queue<SocketClientSide> fila_escuta;
 
-    // private Queue<SocketClientSide> fila_envio;
-
     private Integer contador_interno;
 
     private ISocketListenFunction metodo_escutar;
@@ -33,16 +31,19 @@ public class SocketServerSide extends IMySocket {
 
     private ExecutorService executorService;
 
-    public SocketServerSide(String endereco, int porta) {
+    private SocketType TIPO;
+
+    public SocketServerSide(String endereco, int porta, SocketType TIPO) {
         super(endereco, porta);
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
         this.conexoes = Collections.synchronizedMap(new HashMap<>());
         this.fila_escuta = new ConcurrentLinkedQueue<>();
         this.contador_interno = 0;
+        this.TIPO = TIPO;
     }
 
-    public Queue<SocketClientSide> Fila() {
-        return this.fila_escuta;
+    public SocketClientSide filaRequisicoes() {
+        return this.fila_escuta.poll();
     }
 
     public void iniciar() {
@@ -102,7 +103,7 @@ public class SocketServerSide extends IMySocket {
     }
 
     private void adicionarConexao(SocketClientSide nova_conexao) {
-        nova_conexao.configurarEntradaSaida(SocketType.TEXTO);
+        nova_conexao.configurarEntradaSaida(TIPO);
         this.conexoes.put(contador_interno, nova_conexao);
         this.fila_escuta.add(nova_conexao);
         this.contador_interno++;
@@ -126,7 +127,7 @@ public class SocketServerSide extends IMySocket {
     public void listarConexoes() {
         this.conexoes.forEach(
                 (id, conexao) -> System.out
-                        .println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getPorta() + "]"));
+                        .println(id + " --> [" + conexao.getEndereco() + "]"));
     }
 
 }

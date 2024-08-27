@@ -1,10 +1,8 @@
 package simulacao_v4.server_v5;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import util.api.SocketClientSide;
 import util.api.SocketServerSide;
+import util.api.SocketType;
 import util.api.Interface.ISocketListenFunction;
 
 public class ServerV5 {
@@ -13,24 +11,23 @@ public class ServerV5 {
 
     private SocketServerSide server;
 
-    private Queue<SocketClientSide> fila;
+    private final int PORTA;
 
-    private final int PORTA = 5000;
+    private final String HOST;
 
-    public ServerV5(){
-        this.fila = new ConcurrentLinkedQueue<>();
+    public ServerV5(String host, int porta){
+        this.PORTA = porta;
+        this.HOST = host;
     }
 
     public void start(){
-        this.server = new SocketServerSide("localhost", PORTA);
+        this.server = new SocketServerSide(this.HOST, this.PORTA, SocketType.TEXTO);
         
         this.server.iniciar();
 
-        this.fila = this.server.Fila();
-
         this.metodo_escutar = () -> {
             while (true) {
-                SocketClientSide cliente = fila.poll();
+                SocketClientSide cliente = this.server.filaRequisicoes();
                 if(cliente != null){
                     String line;
                     while((line = cliente.receberMensagem()) != null){

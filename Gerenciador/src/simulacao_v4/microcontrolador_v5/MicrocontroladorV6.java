@@ -1,30 +1,22 @@
 package simulacao_v4.microcontrolador_v5;
 
-import java.util.Scanner;
-
 import util.api.SocketClientSide;
 import util.api.SocketType;
 import util.api.Interface.ISocketListenFunction;
-import util.api.Interface.ISocketWriteFunction;
 
-public class MicrocontroladorV5 {
+public class MicrocontroladorV6 {
     
     private SocketClientSide socket;
 
     private ISocketListenFunction metodo_escutar;
 
-    private ISocketWriteFunction metodo_enviar;
-
-    private Scanner scan;
-
     private final int PORTA;
 
     private final String HOST;
 
-    public MicrocontroladorV5(String host, int porta){
+    public MicrocontroladorV6(String host, int porta){
         this.HOST = host;
         this.PORTA = porta;
-        this.scan = new Scanner(System.in);
     }
 
     public void start(){
@@ -38,25 +30,15 @@ public class MicrocontroladorV5 {
             String line;
             while ((line = this.socket.receberMensagem()) != null) {
                 System.out.println(line);
+                this.socket.enviarMensagem(
+                    String.valueOf(Integer.parseInt(line) * 2)
+                );
             }
-        };
-
-        this.metodo_enviar = () -> {
-            String msg = "";
-            do {
-                System.out.println("Digite algo:");
-                msg = this.scan.nextLine();
-                this.socket.enviarMensagem(msg);      
-            } while (msg.equalsIgnoreCase("sair"));
         };
 
         this.socket.configurarMetodoEscutar(metodo_escutar);
 
-        this.socket.configurarMetodoEnviar(metodo_enviar);
-
         this.socket.escutar();
-
-        this.socket.enviar();
     }
 
 }
