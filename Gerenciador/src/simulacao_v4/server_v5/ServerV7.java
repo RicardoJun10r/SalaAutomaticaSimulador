@@ -46,7 +46,7 @@ public class ServerV7 {
         };
 
         this.metodo_enviar = () -> {
-            Integer op, microcontrolador, server, id, porta;
+            Integer op, microcontrolador, server, id_server, id_microcontrolador, porta;
             String endereco;
             do {
                 MenuInterface.mostrarOpcoes();
@@ -57,8 +57,8 @@ public class ServerV7 {
                         microcontrolador = this.scanner.nextInt();
                         if(microcontrolador <= 2){
                             System.out.println("ID DO MICROCONTROLADOR:");
-                            id = this.scanner.nextInt();
-                            this.server.unicast(id, microcontrolador.toString());
+                            id_microcontrolador = this.scanner.nextInt();
+                            this.server.unicast(id_microcontrolador, microcontrolador.toString());
                         } else {
                             this.server.broadcast(microcontrolador.toString());
                         }
@@ -67,12 +67,14 @@ public class ServerV7 {
                     case 1: {
                         MenuInterface.controlarServer();
                         server = this.scanner.nextInt();
-                        if(server <= 3){
-                            System.out.println("ID DO SERVER:");
-                            id = this.scanner.nextInt();
-                            this.server.unicast(id, server.toString());
+                        System.out.println("ID DO SERVER:");
+                        id_server = this.scanner.nextInt();
+                        if(server <= 2){
+                            System.out.println("ID DO MICROCONTROLADOR:");
+                            id_microcontrolador = this.scanner.nextInt();
+                            this.server.unicast(id_server, server.toString());
                         } else {
-                            this.server.broadcast(server.toString());
+                            this.server.unicast(id_server, server.toString());
                         }
                         break;
                     }
