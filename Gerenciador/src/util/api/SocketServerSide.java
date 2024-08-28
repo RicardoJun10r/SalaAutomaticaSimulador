@@ -102,7 +102,7 @@ public class SocketServerSide extends IMySocket {
         }
     }
 
-    public void conectar(SocketClientSide nova_conexao){
+    public void adicionar(SocketClientSide nova_conexao) {
         this.adicionarConexao(nova_conexao);
     }
 
@@ -117,6 +117,16 @@ public class SocketServerSide extends IMySocket {
         this.conexoes.get(id).enviarMensagem(msg);
     }
 
+    public void unicast(String endereco, int porta, String msg) {
+        System.out.println("tentar enviar");
+        for (SocketClientSide cliente : conexoes.values()) {
+            if (cliente.getEndereco().equals(endereco) && cliente.getPorta() == porta) {
+                System.out.println("enviando: " + endereco + ":" + porta);
+                cliente.enviarMensagem(msg);
+            }
+        }
+    }
+
     public void multicast(Integer[] id, String msg) {
         for (int i = 0; i < id.length; i++)
             if (this.conexoes.get(id[i]) != null)
@@ -128,10 +138,19 @@ public class SocketServerSide extends IMySocket {
                 (id, conexao) -> conexao.enviarMensagem(msg));
     }
 
+    public Boolean verificarConexao(String endereco, int porta) {
+        for (SocketClientSide cliente : conexoes.values()) {
+            if (cliente.getEndereco().equals(endereco) && cliente.getPorta() == porta) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void listarConexoes() {
         this.conexoes.forEach(
                 (id, conexao) -> System.out
-                        .println(id + " --> [" + conexao.getEndereco() + "]"));
+                        .println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getPorta() + "]"));
     }
 
 }

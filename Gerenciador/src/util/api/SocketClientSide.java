@@ -33,7 +33,7 @@ public class SocketClientSide extends IMySocket {
     }
 
     public SocketClientSide(Socket socket){
-        super(socket.getRemoteSocketAddress().toString(), socket.getPort());
+        super(socket.getLocalAddress().toString(), socket.getPort());
         this.socket = socket;
         this.entrada_saida = new SocketIO();
         this.executorService = Executors.newVirtualThreadPerTaskExecutor();
@@ -81,7 +81,11 @@ public class SocketClientSide extends IMySocket {
     }
 
     public void enviarMensagem(String msg){
-        this.entrada_saida.enviar(msg);
+        if(this.entrada_saida.enviar(msg)){
+            System.out.println("enviado");
+        } else {
+            System.out.println("ERRO no envio da msg: " + msg);
+        }
     }
 
     public String receberMensagem(){

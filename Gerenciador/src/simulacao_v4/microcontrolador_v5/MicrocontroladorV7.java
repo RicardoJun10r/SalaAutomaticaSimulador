@@ -39,20 +39,31 @@ public class MicrocontroladorV7 {
         this.metodo_escutar = () -> {
             String line;
             while ((line = this.socket.receberMensagem()) != null) {
+                String[]req = line.split(";");
+                String op, head, tail;
                 if (DEBUG) {
                     System.out.println("DEBUG: " + line);
                 }
-                switch (line) {
+                if(req[0].equals("fwd")){
+                    op = req[1];
+                    head = "fwd;res;";
+                    tail = ";" + req[2];
+                }else {
+                    op = line;
+                    head = "";
+                    tail = "";
+                }
+                switch(op) {
                     case "0", "4": {
-                        this.socket.enviarMensagem("ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos());
+                        this.socket.enviarMensagem(head + "ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos() + tail);
                         break;
                     }
                     case "1", "3": {
-                        this.socket.enviarMensagem("ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos());
+                        this.socket.enviarMensagem(head + "ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos() + tail);
                         break;
                     }
                     case "2", "5": {
-                        this.socket.enviarMensagem("ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos());
+                        this.socket.enviarMensagem(head + "ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos() + tail);
                         break;
                     }
                     default: {
