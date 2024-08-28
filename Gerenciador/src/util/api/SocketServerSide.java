@@ -102,6 +102,10 @@ public class SocketServerSide extends IMySocket {
         }
     }
 
+    public void conectar(SocketClientSide nova_conexao){
+        this.adicionarConexao(nova_conexao);
+    }
+
     private void adicionarConexao(SocketClientSide nova_conexao) {
         nova_conexao.configurarEntradaSaida(TIPO);
         this.conexoes.put(contador_interno, nova_conexao);
