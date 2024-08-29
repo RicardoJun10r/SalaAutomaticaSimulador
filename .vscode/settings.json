@@ -3,13 +3,13 @@
         "Gerenciador/src"
     ],
     "java.project.referencedLibraries": [
-        "/home/ricardojunior/Downloads/javafx-sdk-21.0.4/lib/javafx-swt.jar",
-        "/home/ricardojunior/Downloads/javafx-sdk-21.0.4/lib/javafx.web.jar",
-        "/home/ricardojunior/Downloads/javafx-sdk-21.0.4/lib/javafx.swing.jar",
-        "/home/ricardojunior/Downloads/javafx-sdk-21.0.4/lib/javafx.media.jar",
-        "/home/ricardojunior/Downloads/javafx-sdk-21.0.4/lib/javafx.graphics.jar",
-        "/home/ricardojunior/Downloads/javafx-sdk-21.0.4/lib/javafx.fxml.jar",
-        "/home/ricardojunior/Downloads/javafx-sdk-21.0.4/lib/javafx.controls.jar",
-        "/home/ricardojunior/Downloads/javafx-sdk-21.0.4/lib/javafx.base.jar"
+        "javafx-sdk-21.0.4/lib/javafx.controls.jar",
+        "javafx-sdk-21.0.4/lib/javafx.fxml.jar",
+        "javafx-sdk-21.0.4/lib/javafx.media.jar",
+        "javafx-sdk-21.0.4/lib/javafx.web.jar",
+        "javafx-sdk-21.0.4/lib/javafx-swt.jar",
+        "javafx-sdk-21.0.4/lib/javafx.base.jar",
+        "javafx-sdk-21.0.4/lib/javafx.graphics.jar",
+        "javafx-sdk-21.0.4/lib/javafx.swing.jar",
     ]
 }
