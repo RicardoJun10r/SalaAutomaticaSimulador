@@ -1,0 +1,106 @@
+{
+    // Use o IntelliSense para saber mais sobre os atributos possíveis.
+    // Focalizar para exibir as descrições dos atributos existentes.
+    // Para obter mais informações, acesse: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "MainClientV3",
+            "request": "launch",
+            "mainClass": "SimulacaoV2.clientV2.MainClientV3",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MainMicrocontroladorV2",
+            "request": "launch",
+            "mainClass": "SimulacaoV2.clientV2.MainMicrocontroladorV2",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MainServerV2",
+            "request": "launch",
+            "mainClass": "SimulacaoV2.serverV2.MainServerV2",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MainServerV3",
+            "request": "launch",
+            "mainClass": "SimulacaoV2.serverV2.MainServerV3",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MainClientTCP",
+            "request": "launch",
+            "mainClass": "TCP.clientTCP.MainClientTCP",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MainServerTCP",
+            "request": "launch",
+            "mainClass": "TCP.serverTCP.MainServerTCP",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MainClientUDP",
+            "request": "launch",
+            "mainClass": "UDP.clientUDP.MainClientUDP",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MainServerUDP",
+            "request": "launch",
+            "mainClass": "UDP.serverUDP.MainServerUDP",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MainMicrocontroladorV4",
+            "request": "launch",
+            "mainClass": "simulacao_v3.microcontrolador_v4.MainMicrocontroladorV4",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MainServerV4",
+            "request": "launch",
+            "mainClass": "simulacao_v3.server_v4.MainServerV4",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "Microcontrolador_Main_V5",
+            "request": "launch",
+            "mainClass": "simulacao_v4.microcontrolador_v5.Microcontrolador_Main_V5",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "Server_Main_V5",
+            "request": "launch",
+            "mainClass": "simulacao_v4.server_v5.Server_Main_V5",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "simulador.Main",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433",
+            "vmArgs": "--module-path ./javafx-sdk-21.0.4/lib --add-modules javafx.controls"
+        }
+    ]
+}
