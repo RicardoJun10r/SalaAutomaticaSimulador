@@ -9,6 +9,14 @@
             "name": "ServidorMain",
             "request": "launch",
             "mainClass": "simulador.server.ServidorMain",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433",
+            "vmArgs": "--module-path ./javafx-sdk-21.0.4/lib/ --add-modules javafx.controls"
+        },
+        {
+            "type": "java",
+            "name": "ServidorMain",
+            "request": "launch",
+            "mainClass": "simulador.server.ServidorMain",
             "projectName": "SalaAutomaticaSimulador_76b39a58",
             "vmArgs": "--module-path ./javafx-sdk-21.0.4/lib/ --add-modules javafx.controls"
         },
@@ -101,6 +109,6 @@
             "request": "launch",
             "mainClass": "simulacao_v4.server_v5.Server_Main_V5",
             "projectName": "SalaAutomaticaSimulador_ba2a9433"
-        },
+        }
     ]
 }

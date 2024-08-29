@@ -1,5 +1,7 @@
 package simulador.server;
 
+import java.util.Map;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
@@ -15,11 +17,17 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import util.api.SocketClientSide;
-import util.api.Interface.IMySocket;
+import util.api.SocketServerSide;
+import util.api.SocketType;
+import util.api.Interface.ISocketListenFunction;
+import util.api.Interface.ISocketWriteFunction;
 
 public class Servidor {
 
@@ -29,9 +37,18 @@ public class Servidor {
 
     private TextArea responses;
 
-    private TableView<IMySocket> tabela;
+    private TableView<Conexao> tabela;
+
+    private Boolean ligado;
+
+    private SocketServerSide servidor;
+
+    private ISocketListenFunction metodo_escutar;
+
+    private ISocketWriteFunction metodo_enviar;
 
     public Servidor() {
+        this.ligado = false;
         page();
     }
 
@@ -42,8 +59,7 @@ public class Servidor {
     private VBox microcontrolador() {
         // Célula (0,0): RadioButton Group e Button
         Label titulo = new Label("USAR MICROCONTROLADOR");
-        titulo.setId("titulo-label"); // Adiciona o ID ao Label para aplicar o CSS
-    
+
         ToggleGroup group = new ToggleGroup();
         RadioButton radioButton1 = new RadioButton("DESLIGAR SALA");
         radioButton1.setToggleGroup(group);
@@ -51,22 +67,16 @@ public class Servidor {
         radioButton2.setToggleGroup(group);
         RadioButton radioButton3 = new RadioButton("DESCREVER SALA");
         radioButton3.setToggleGroup(group);
-    
-        // Alinha os RadioButtons à esquerda aplicando a classe CSS
-        radioButton1.getStyleClass().add("radio-button");
-        radioButton2.getStyleClass().add("radio-button");
-        radioButton3.getStyleClass().add("radio-button");
-    
+
         TextField id_microcontrolador = new TextField();
         id_microcontrolador.setPromptText("ID DO MICROCONTROLADOR");
-        id_microcontrolador.setId("microcontrolador-textfield"); // Adiciona o ID ao TextField para aplicar o CSS
-    
+        id_microcontrolador.setPrefWidth(200.0);
+
         Button buttonGroup1 = new Button("ENVIAR");
-    
+
         VBox vBox = new VBox(10, titulo, radioButton1, radioButton2, radioButton3, id_microcontrolador, buttonGroup1);
-        vBox.setId("microcontrolador-vbox"); // Adiciona o ID ao VBox para aplicar o CSS
-        vBox.setAlignment(Pos.TOP_CENTER); // Alinha o VBox no topo
-    
+        vBox.setAlignment(Pos.CENTER); // Alinha o VBox no topo
+
         return vBox;
     }
 
@@ -88,10 +98,12 @@ public class Servidor {
         id_servidor.setPromptText("ID DO SERVIDOR");
 
         TextField id_microcontrolador = new TextField();
-        id_microcontrolador.setPromptText("ID DO SERVIDOR");
+        id_microcontrolador.setPromptText("ID DO MICROCONTROLADOR");
 
         Button buttonGroup1 = new Button("ENVIAR");
-        VBox vBox = new VBox(10, titulo, radioButton1, radioButton2, radioButton3, radioButton4, id_servidor, id_microcontrolador, buttonGroup1);
+
+        VBox vBox = new VBox(10, titulo, radioButton1, radioButton2, radioButton3, radioButton4, id_servidor,
+                id_microcontrolador, buttonGroup1);
         vBox.setAlignment(Pos.CENTER);
 
         return vBox;
@@ -101,6 +113,14 @@ public class Servidor {
         // Célula (2,0): Formulário com dois campos de texto e um botão
         Label titulo = new Label("MEU SERVIDOR");
 
+        // Criação do círculo
+        Circle circulo = new Circle(5); // Raio do círculo, ajustável conforme necessário
+        atualizarCorCirculo(circulo);
+
+        // Coloca a Label e o Círculo em um HBox
+        HBox hBoxTitulo = new HBox(10, titulo, circulo); // 10 é o espaçamento entre a Label e o círculo
+        hBoxTitulo.setAlignment(Pos.CENTER);
+
         TextField textField1Form1 = new TextField();
         textField1Form1.setPromptText("ENDEREÇO");
 
@@ -108,10 +128,42 @@ public class Servidor {
         textField2Form1.setPromptText("PORTA");
 
         Button buttonForm1 = new Button("LIGAR");
-        VBox vBoxForm1 = new VBox(10, titulo, textField1Form1, textField2Form1, buttonForm1);
+
+        buttonForm1.setOnAction((event) -> {
+            String endereco = textField1Form1.getText();
+
+            int porta = Integer.parseInt(textField2Form1.getText());
+
+            this.servidor = new SocketServerSide(endereco, porta, SocketType.TEXTO);
+
+            this.servidor.iniciar();
+
+            this.ligado = true;
+
+            atualizarCorCirculo(circulo);
+
+            // Célula (1,1): TableView com cabeçalhos "Endereço" e "Porta"
+            connectionsTable();
+            this.gridPane.add(this.tabela, 1, 1); // Coluna 1, Linha 1
+            GridPane.setFillWidth(this.tabela, true);
+            GridPane.setFillHeight(this.tabela, true);
+            GridPane.setHalignment(this.tabela, javafx.geometry.HPos.CENTER); // Centraliza a tabela horizontalmente
+            GridPane.setValignment(this.tabela, javafx.geometry.VPos.CENTER); // Centraliza a tabela verticalmente
+
+        });
+
+        VBox vBoxForm1 = new VBox(10, hBoxTitulo, textField1Form1, textField2Form1, buttonForm1);
         vBoxForm1.setAlignment(Pos.CENTER);
 
         return vBoxForm1;
+    }
+
+    private void atualizarCorCirculo(Circle circulo) {
+        if (this.ligado) {
+            circulo.setFill(Color.GREEN);
+        } else {
+            circulo.setFill(Color.RED);
+        }
     }
 
     private VBox connectNewServer() {
@@ -137,6 +189,7 @@ public class Servidor {
         for (int i = 0; i < 3; i++) {
             ColumnConstraints colConstraints = new ColumnConstraints();
             colConstraints.setHgrow(Priority.ALWAYS); // Permitir que a coluna cresça
+            colConstraints.setFillWidth(true); // Permite que o conteúdo se expanda para a largura total
             colConstraints.setPercentWidth(33.33); // Cada coluna ocupa 1/3 da largura
             gridPane.getColumnConstraints().add(colConstraints);
         }
@@ -144,6 +197,7 @@ public class Servidor {
         for (int i = 0; i < 2; i++) {
             RowConstraints rowConstraints = new RowConstraints();
             rowConstraints.setVgrow(Priority.ALWAYS); // Permitir que a linha cresça
+            rowConstraints.setFillHeight(true); // Permite que o conteúdo se expanda para a altura total
             rowConstraints.setPercentHeight(50); // Cada linha ocupa 50% da altura
             gridPane.getRowConstraints().add(rowConstraints);
         }
@@ -157,19 +211,33 @@ public class Servidor {
     }
 
     private void connectionsTable() {
-        // Célula (1,1): TableView com cabeçalhos "Endereço" e "Porta"
+        // Célula (1,1): TableView com cabeçalhos "ID", "Endereço" e "Porta"
         this.tabela = new TableView<>();
-        TableColumn<IMySocket, String> colEndereco = new TableColumn<>("Endereço");
+
+        // Coluna de ID
+        TableColumn<Conexao, Integer> colId = new TableColumn<>("ID");
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+
+        // Coluna de Endereço
+        TableColumn<Conexao, String> colEndereco = new TableColumn<>("Endereço");
         colEndereco.setCellValueFactory(new PropertyValueFactory<>("endereco"));
-        TableColumn<IMySocket, String> colPorta = new TableColumn<>("Porta");
+
+        // Coluna de Porta
+        TableColumn<Conexao, Integer> colPorta = new TableColumn<>("Porta");
         colPorta.setCellValueFactory(new PropertyValueFactory<>("porta"));
 
+        tabela.getColumns().add(colId);
         tabela.getColumns().add(colEndereco);
         tabela.getColumns().add(colPorta);
 
-        ObservableList<IMySocket> data = FXCollections.observableArrayList(
-                new SocketClientSide("192.168.1.1", 8080),
-                new SocketClientSide("10.0.0.1", 9090));
+        // Adiciona os dados do Map para a tabela
+        ObservableList<Conexao> data = FXCollections.observableArrayList();
+
+        for (Map.Entry<Integer, SocketClientSide> entry : servidor.getConexoes().entrySet()) {
+            Integer id = entry.getKey();
+            SocketClientSide client = entry.getValue();
+            data.add(new Conexao(id, client.getEndereco(), client.getPorta()));
+        }
 
         tabela.setItems(data);
     }
@@ -190,14 +258,6 @@ public class Servidor {
         // Célula (0,1): Outro formulário com os mesmos campos
         gridPane.add(connectNewServer(), 0, 1); // Coluna 0, Linha 1
 
-        // Célula (1,1): TableView com cabeçalhos "Endereço" e "Porta"
-        connectionsTable();
-        gridPane.add(this.tabela, 1, 1); // Coluna 1, Linha 1
-        GridPane.setFillWidth(this.tabela, true);
-        GridPane.setFillHeight(this.tabela, true);
-        GridPane.setHalignment(this.tabela, javafx.geometry.HPos.CENTER); // Centraliza a tabela horizontalmente
-        GridPane.setValignment(this.tabela, javafx.geometry.VPos.CENTER); // Centraliza a tabela verticalmente
-
         // Célula (2,1): TextArea
         response();
         gridPane.add(this.responses, 2, 1); // Coluna 2, Linha 1
@@ -207,8 +267,6 @@ public class Servidor {
         GridPane.setValignment(this.responses, javafx.geometry.VPos.CENTER); // Centraliza o TextArea verticalmente
 
         this.scene = new Scene(gridPane, 800, 600);
-
-        scene.getStylesheets().add(getClass().getResource("./servidor_style.css").toExternalForm());
 
     }
 

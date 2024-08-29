@@ -42,6 +42,8 @@ public class SocketServerSide extends IMySocket {
         this.TIPO = TIPO;
     }
 
+    public Map<Integer, SocketClientSide> getConexoes(){ return this.conexoes; }
+
     public SocketClientSide filaRequisicoes() {
         return this.fila_escuta.poll();
     }
