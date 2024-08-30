@@ -75,6 +75,13 @@ public class ServidorSocket {
                             System.out.println(
                                     "DEBUG [" + cliente.getEndereco() + ":" + cliente.getPorta() + "]: " + line);
                         }
+                        if(line.startsWith("fwd")){
+                            String[]res = line.split(";");
+                            if(!verificarConexao(res[1], Integer.parseInt(res[2]))){
+                                adicionarConexao(res[1], Integer.parseInt(res[2]));
+                            }
+                            
+                        }
                         if(line.contains("*")){
                             line = line.replace('*', '\n');
                         }
@@ -103,25 +110,22 @@ public class ServidorSocket {
                         System.out.println("Comando capturado!");
                         if (comando != null) {
                             res = comando.split(";");
-                            switch (res[0]) {
-                                case "0": {
-                                    if(res[1].equals("-1")){
-                                        this.server.broadcast(res[2]);
-                                    } else {
-                                        System.out.println("Enviando: " + comando);
-                                        this.server.unicast(Integer.parseInt(res[1]), res[2]);
-                                    }
-                                    break;
+                            if(res[0].equals("0")){
+                                if(res[1].equals("-1")){
+                                    this.server.broadcast(res[2]);
+                                } else {
+                                    System.out.println("Enviando: " + comando);
+                                    this.server.unicast(Integer.parseInt(res[1]), res[2]);
                                 }
-                                case "1": {
-                                    break;
+                            } else if(res[0].equals("1")){
+                                if(res[2].equals("-1")){
+                                    this.server.unicast(Integer.parseInt(res[1]), "fwd;" + this.server.getEndereco() + ";" + this.server.getPorta() + ";-1;" + res[3]);
+                                } else {
+                                    System.out.println("Enviando: " + comando);
+                                    this.server.unicast(Integer.parseInt(res[1]), "fwd;" + this.server.getEndereco() + ";" + this.server.getPorta() + ";" + res[2] + ";" + res[3]);
                                 }
-                                case "2": {
-                                    break;
-                                }
-                                default:
-                                    System.out.println("ERRO, SEM COMANDO ESPECIFICADO");
-                                    break;
+                            } else {
+                                System.out.println("ERRO, SEM COMANDO ESPECIFICADO");
                             }
                         }
                     }
@@ -136,6 +140,10 @@ public class ServidorSocket {
         this.server.enviar();
 
         this.server.escutar();
+    }
+
+    public Boolean verificarConexao(String endereco, int porta){
+        return this.server.verificarConexao(endereco, porta);
     }
 
     public void adicionarConexao(String endereco, int porta) {

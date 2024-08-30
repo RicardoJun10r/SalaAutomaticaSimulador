@@ -79,35 +79,36 @@ public class Servidor implements ISocketConnectionsFunction {
 
         buttonGroup1.setOnAction((event) -> {
             // Verifica qual botão de rádio está selecionado
-        RadioButton selectedRadioButton = (RadioButton) group.getSelectedToggle();
+            RadioButton selectedRadioButton = (RadioButton) group.getSelectedToggle();
 
-        if (selectedRadioButton != null) {
-            String radioButtonLabel = selectedRadioButton.getText(); // Obtém o texto do RadioButton selecionado
-            String microcontroladorId = id_microcontrolador.getText(); // Obtém o texto do campo de entrada
-            if (!isNaN(microcontroladorId)) {
-                microcontroladorId = "-1";
-            }
-            String opcao = "";
-            
-            // Processa o comando baseado no botão de rádio selecionado e ID do microcontrolador
-            if (radioButtonLabel.equals("DESLIGAR SALA")) {
-                System.out.println("Comando: DESLIGAR SALA, Microcontrolador ID: " + microcontroladorId);
-                opcao = "0";
-                // Implementar lógica para desligar a sala
-            } else if (radioButtonLabel.equals("LIGAR SALA")) {
-                System.out.println("Comando: LIGAR SALA, Microcontrolador ID: " + microcontroladorId);
-                opcao = "1";
-                // Implementar lógica para ligar a sala
-            } else if (radioButtonLabel.equals("DESCREVER SALA")) {
-                System.out.println("Comando: DESCREVER SALA, Microcontrolador ID: " + microcontroladorId);
-                opcao = "2";
-                // Implementar lógica para descrever a sala
-            }
+            if (selectedRadioButton != null) {
+                String radioButtonLabel = selectedRadioButton.getText(); // Obtém o texto do RadioButton selecionado
+                String microcontroladorId = id_microcontrolador.getText(); // Obtém o texto do campo de entrada
+                if (!isNaN(microcontroladorId)) {
+                    microcontroladorId = "-1";
+                }
+                String opcao = "";
 
-            this.servidorSocket.addCommand("0;" + microcontroladorId + ";" + opcao);
-        } else {
-            System.out.println("Nenhuma opção selecionada.");
-        }
+                // Processa o comando baseado no botão de rádio selecionado e ID do
+                // microcontrolador
+                if (radioButtonLabel.equals("DESLIGAR SALA")) {
+                    System.out.println("Comando: DESLIGAR SALA, Microcontrolador ID: " + microcontroladorId);
+                    opcao = "0";
+                    // Implementar lógica para desligar a sala
+                } else if (radioButtonLabel.equals("LIGAR SALA")) {
+                    System.out.println("Comando: LIGAR SALA, Microcontrolador ID: " + microcontroladorId);
+                    opcao = "1";
+                    // Implementar lógica para ligar a sala
+                } else if (radioButtonLabel.equals("DESCREVER SALA")) {
+                    System.out.println("Comando: DESCREVER SALA, Microcontrolador ID: " + microcontroladorId);
+                    opcao = "2";
+                    // Implementar lógica para descrever a sala
+                }
+
+                this.servidorSocket.addCommand("0;" + microcontroladorId + ";" + opcao);
+            } else {
+                System.out.println("Nenhuma opção selecionada.");
+            }
         });
 
         VBox vBox = new VBox(10, titulo, radioButton1, radioButton2, radioButton3, id_microcontrolador, buttonGroup1);
@@ -116,10 +117,13 @@ public class Servidor implements ISocketConnectionsFunction {
         return vBox;
     }
 
-    private Boolean isNaN(String caractere){
-        if(caractere.isEmpty()) return false;
-        else if(caractere.charAt(0) > 47 && caractere.charAt(0) < 58) return true;
-        else return false;
+    private Boolean isNaN(String caractere) {
+        if (caractere.isEmpty())
+            return false;
+        else if (caractere.charAt(0) > 47 && caractere.charAt(0) < 58)
+            return true;
+        else
+            return false;
     }
 
     private VBox server() {
@@ -145,7 +149,42 @@ public class Servidor implements ISocketConnectionsFunction {
         Button buttonGroup1 = new Button("ENVIAR");
 
         buttonGroup1.setOnAction((event) -> {
+            // Verifica qual botão de rádio está selecionado
+            RadioButton selectedRadioButton = (RadioButton) group.getSelectedToggle();
 
+            if (selectedRadioButton != null) {
+                String radioButtonLabel = selectedRadioButton.getText(); // Obtém o texto do RadioButton selecionado
+                String microcontroladorId = id_microcontrolador.getText(); // Obtém o texto do campo de entrada
+                String serverId = id_servidor.getText();
+
+                if (!isNaN(microcontroladorId)) {
+                    microcontroladorId = "-1";
+                }
+                String opcao = "";
+
+                // Processa o comando baseado no botão de rádio selecionado e ID do
+                // microcontrolador
+                if (radioButtonLabel.equals("DESLIGAR SALA")) {
+                    System.out.println("Comando: DESLIGAR SALA, Microcontrolador ID: " + microcontroladorId);
+                    System.out.println("Comando: DESLIGAR SALA, SERVER ID: " + serverId);
+                    opcao = "0";
+                    // Implementar lógica para desligar a sala
+                } else if (radioButtonLabel.equals("LIGAR SALA")) {
+                    System.out.println("Comando: LIGAR SALA, Microcontrolador ID: " + microcontroladorId);
+                    System.out.println("Comando: DESLIGAR SALA, SERVER ID: " + serverId);
+                    opcao = "1";
+                    // Implementar lógica para ligar a sala
+                } else if (radioButtonLabel.equals("DESCREVER SALA")) {
+                    System.out.println("Comando: DESCREVER SALA, Microcontrolador ID: " + microcontroladorId);
+                    System.out.println("Comando: DESLIGAR SALA, SERVER ID: " + serverId);
+                    opcao = "2";
+                    // Implementar lógica para descrever a sala
+                }
+
+                this.servidorSocket.addCommand("1;" + serverId + ";" + microcontroladorId + ";" + opcao);
+            } else {
+                System.out.println("Nenhuma opção selecionada.");
+            }
         });
 
         VBox vBox = new VBox(10, titulo, radioButton1, radioButton2, radioButton3, radioButton4, id_servidor,
@@ -182,13 +221,15 @@ public class Servidor implements ISocketConnectionsFunction {
 
             servidorSocket = new ServidorSocket(endereco, porta, false, responses);
 
-            this.serverThread = new Thread(()->{ servidorSocket.start(); });
-            
+            this.serverThread = new Thread(() -> {
+                servidorSocket.start();
+            });
+
             // Configurar a função de atualização de conexões
             servidorSocket.configurarUpdateConnections(this); // Passando 'this' como função de atualização
 
             this.serverThread.setDaemon(true);
-            
+
             this.serverThread.start();
 
             this.ligado = true;
@@ -287,18 +328,18 @@ public class Servidor implements ISocketConnectionsFunction {
     @SuppressWarnings("unchecked")
     private void connectionsTable() {
         this.tabela = new TableView<>();
-    
+
         TableColumn<Conexao, Integer> colId = new TableColumn<>("ID");
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-    
+
         TableColumn<Conexao, String> colEndereco = new TableColumn<>("Endereço");
         colEndereco.setCellValueFactory(new PropertyValueFactory<>("endereco"));
-    
+
         TableColumn<Conexao, Integer> colPorta = new TableColumn<>("Porta");
         colPorta.setCellValueFactory(new PropertyValueFactory<>("porta"));
-    
+
         tabela.getColumns().addAll(colId, colEndereco, colPorta);
-    
+
         tabela.setItems(this.data); // Configura a tabela para usar a lista observável
     }
 
