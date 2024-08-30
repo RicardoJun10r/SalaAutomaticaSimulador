@@ -24,10 +24,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import util.api.SocketClientSide;
-import util.api.SocketServerSide;
-import util.api.SocketType;
-import util.api.Interface.ISocketListenFunction;
-import util.api.Interface.ISocketWriteFunction;
 
 public class Servidor {
 
@@ -41,11 +37,9 @@ public class Servidor {
 
     private Boolean ligado;
 
-    private SocketServerSide servidor;
+    private ServidorSocket servidorSocket;
 
-    private ISocketListenFunction metodo_escutar;
-
-    private ISocketWriteFunction metodo_enviar;
+    private Thread serverThread;
 
     public Servidor() {
         this.ligado = false;
@@ -73,6 +67,39 @@ public class Servidor {
         id_microcontrolador.setPrefWidth(200.0);
 
         Button buttonGroup1 = new Button("ENVIAR");
+
+        buttonGroup1.setOnAction((event) -> {
+            // Verifica qual botão de rádio está selecionado
+        RadioButton selectedRadioButton = (RadioButton) group.getSelectedToggle();
+
+        if (selectedRadioButton != null) {
+            String radioButtonLabel = selectedRadioButton.getText(); // Obtém o texto do RadioButton selecionado
+            String microcontroladorId = id_microcontrolador.getText(); // Obtém o texto do campo de entrada
+            if (microcontroladorId == null) {
+                microcontroladorId = "-1";
+            }
+            String opcao = "";
+            
+            // Processa o comando baseado no botão de rádio selecionado e ID do microcontrolador
+            if (radioButtonLabel.equals("DESLIGAR SALA")) {
+                System.out.println("Comando: DESLIGAR SALA, Microcontrolador ID: " + microcontroladorId);
+                opcao = "0";
+                // Implementar lógica para desligar a sala
+            } else if (radioButtonLabel.equals("LIGAR SALA")) {
+                System.out.println("Comando: LIGAR SALA, Microcontrolador ID: " + microcontroladorId);
+                opcao = "1";
+                // Implementar lógica para ligar a sala
+            } else if (radioButtonLabel.equals("DESCREVER SALA")) {
+                System.out.println("Comando: DESCREVER SALA, Microcontrolador ID: " + microcontroladorId);
+                opcao = "2";
+                // Implementar lógica para descrever a sala
+            }
+
+            this.servidorSocket.addCommand("0;" + microcontroladorId + ";" + opcao);
+        } else {
+            System.out.println("Nenhuma opção selecionada.");
+        }
+        });
 
         VBox vBox = new VBox(10, titulo, radioButton1, radioButton2, radioButton3, id_microcontrolador, buttonGroup1);
         vBox.setAlignment(Pos.CENTER); // Alinha o VBox no topo
@@ -134,9 +161,13 @@ public class Servidor {
 
             int porta = Integer.parseInt(textField2Form1.getText());
 
-            this.servidor = new SocketServerSide(endereco, porta, SocketType.TEXTO);
+            servidorSocket = new ServidorSocket(endereco, porta, false, responses);
 
-            this.servidor.iniciar();
+            this.serverThread = new Thread(()->{ servidorSocket.start(); });
+
+            this.serverThread.setDaemon(true);
+
+            this.serverThread.start();
 
             this.ligado = true;
 
@@ -233,7 +264,7 @@ public class Servidor {
         // Adiciona os dados do Map para a tabela
         ObservableList<Conexao> data = FXCollections.observableArrayList();
 
-        for (Map.Entry<Integer, SocketClientSide> entry : servidor.getConexoes().entrySet()) {
+        for (Map.Entry<Integer, SocketClientSide> entry : this.servidorSocket.listarConexoes().entrySet()) {
             Integer id = entry.getKey();
             SocketClientSide client = entry.getValue();
             data.add(new Conexao(id, client.getEndereco(), client.getPorta()));

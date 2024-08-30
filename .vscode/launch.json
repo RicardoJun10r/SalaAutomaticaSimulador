@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MicrocontroladorMain",
+            "request": "launch",
+            "mainClass": "simulador.client.MicrocontroladorMain",
+            "projectName": "SalaAutomaticaSimulador_76b39a58"
+        },
+        {
+            "type": "java",
             "name": "ServidorMain",
             "request": "launch",
             "mainClass": "simulador.server.ServidorMain",
