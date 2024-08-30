@@ -9,6 +9,13 @@
             "name": "MicrocontroladorMain",
             "request": "launch",
             "mainClass": "simulador.client.MicrocontroladorMain",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "MicrocontroladorMain",
+            "request": "launch",
+            "mainClass": "simulador.client.MicrocontroladorMain",
             "projectName": "SalaAutomaticaSimulador_76b39a58"
         },
         {

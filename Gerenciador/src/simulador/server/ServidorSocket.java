@@ -6,6 +6,7 @@ import java.util.Queue;
 import javafx.scene.control.TextArea;
 
 import java.util.LinkedList;
+import java.util.Arrays;
 
 import util.api.SocketClientSide;
 import util.api.SocketServerSide;
@@ -75,12 +76,20 @@ public class ServidorSocket {
                             System.out.println(
                                     "DEBUG [" + cliente.getEndereco() + ":" + cliente.getPorta() + "]: " + line);
                         }
+                        if(line.startsWith("res")){
+                            String[]res = line.split(";");
+                            this.server.unicast(res[1], Integer.parseInt(res[2]), res[3]);
+                        }
                         if(line.startsWith("fwd")){
                             String[]res = line.split(";");
                             if(!verificarConexao(res[1], Integer.parseInt(res[2]))){
                                 adicionarConexao(res[1], Integer.parseInt(res[2]));
                             }
-                            
+                            if(res[4].equals("-1")){
+                                this.server.broadcast("fwd;" + res[1] + ";" + res[2] + ";" + res[5]);
+                            } else {
+                                this.server.unicast(Integer.parseInt(res[4]),"fwd;" + res[1] + ";" + res[2] + ";" + res[5]);
+                            }
                         }
                         if(line.contains("*")){
                             line = line.replace('*', '\n');
@@ -122,6 +131,7 @@ public class ServidorSocket {
                                     this.server.unicast(Integer.parseInt(res[1]), "fwd;" + this.server.getEndereco() + ";" + this.server.getPorta() + ";-1;" + res[3]);
                                 } else {
                                     System.out.println("Enviando: " + comando);
+                                    System.out.println(Arrays.toString(res));
                                     this.server.unicast(Integer.parseInt(res[1]), "fwd;" + this.server.getEndereco() + ";" + this.server.getPorta() + ";" + res[2] + ";" + res[3]);
                                 }
                             } else {

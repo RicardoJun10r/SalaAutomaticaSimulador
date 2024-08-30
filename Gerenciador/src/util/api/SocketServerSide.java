@@ -49,7 +49,16 @@ public class SocketServerSide extends IMySocket {
     public Map<Integer, SocketClientSide> getConexoes(){ return this.conexoes; }
 
     public SocketClientSide filaRequisicoes() {
-        return this.fila_escuta.poll();
+        synchronized (this.fila_escuta) {
+            while (this.fila_escuta.isEmpty()) {
+                try {
+                    this.fila_escuta.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            return this.fila_escuta.poll();
+        }
     }
 
     public void configurarUpdateConnections(ISocketConnectionsFunction atualizar_conexoes){ this.atualizar_conexoes = atualizar_conexoes; }
@@ -91,7 +100,8 @@ public class SocketServerSide extends IMySocket {
                 try {
                     SocketClientSide socketClientSide = new SocketClientSide(this.server.accept());
                     adicionarConexao(socketClientSide);
-                    this.executorService.submit(() -> this.metodo_escutar.escutar());
+                    // this.executorService.submit(() -> this.metodo_escutar.escutar());
+                    new Thread(() -> {this.metodo_escutar.escutar();}).start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -116,11 +126,14 @@ public class SocketServerSide extends IMySocket {
 
     private void adicionarConexao(SocketClientSide nova_conexao) {
         nova_conexao.configurarEntradaSaida(TIPO);
-        this.conexoes.put(contador_interno, nova_conexao);
-        this.fila_escuta.add(nova_conexao);
-        this.contador_interno++;
-        if(this.atualizar_conexoes != null){
-            this.atualizar_conexoes.updateConnections();
+        synchronized (this.fila_escuta) {
+            this.conexoes.put(contador_interno, nova_conexao);
+            this.fila_escuta.add(nova_conexao);
+            this.contador_interno++;
+            if (this.atualizar_conexoes != null) {
+                this.atualizar_conexoes.updateConnections();
+            }
+            this.fila_escuta.notify();
         }
     }
 

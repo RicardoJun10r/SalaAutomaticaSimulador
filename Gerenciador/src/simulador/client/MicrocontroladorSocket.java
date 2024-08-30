@@ -40,30 +40,28 @@ public class MicrocontroladorSocket {
             String line;
             while ((line = this.socket.receberMensagem()) != null) {
                 String[]req = line.split(";");
-                String op, head, tail;
+                String op, head;
                 if (DEBUG) {
                     System.out.println("DEBUG: " + line);
                 }
                 if(req[0].equals("fwd")){
-                    op = req[1];
-                    head = "fwd;res;";
-                    tail = ";" + req[2];
+                    op = req[3];
+                    head = "res;" + req[1] + ";" + req[2] + ";";
                 }else {
                     op = line;
                     head = "";
-                    tail = "";
                 }
                 switch(op) {
                     case "0", "4": {
-                        this.socket.enviarMensagem(head + "ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos() + tail);
+                        this.socket.enviarMensagem(head + "ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos());
                         break;
                     }
                     case "1", "3": {
-                        this.socket.enviarMensagem(head + "ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos() + tail);
+                        this.socket.enviarMensagem(head + "ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos());
                         break;
                     }
                     case "2", "5": {
-                        this.socket.enviarMensagem(head + "ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos() + tail);
+                        this.socket.enviarMensagem(head + "ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos());
                         break;
                     }
                     default: {
