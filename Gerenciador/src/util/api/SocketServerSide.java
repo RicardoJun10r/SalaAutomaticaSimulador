@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import util.api.Interface.IMySocket;
+import util.api.Interface.ISocketConnectionsFunction;
 import util.api.Interface.ISocketListenFunction;
 import util.api.Interface.ISocketWriteFunction;
 
@@ -29,6 +30,8 @@ public class SocketServerSide extends IMySocket {
 
     private ISocketWriteFunction metodo_enviar;
 
+    private ISocketConnectionsFunction atualizar_conexoes;
+
     private ExecutorService executorService;
 
     private SocketType TIPO;
@@ -40,6 +43,7 @@ public class SocketServerSide extends IMySocket {
         this.fila_escuta = new ConcurrentLinkedQueue<>();
         this.contador_interno = 0;
         this.TIPO = TIPO;
+        this.atualizar_conexoes = null;
     }
 
     public Map<Integer, SocketClientSide> getConexoes(){ return this.conexoes; }
@@ -47,6 +51,8 @@ public class SocketServerSide extends IMySocket {
     public SocketClientSide filaRequisicoes() {
         return this.fila_escuta.poll();
     }
+
+    public void configurarUpdateConnections(ISocketConnectionsFunction atualizar_conexoes){ this.atualizar_conexoes = atualizar_conexoes; }
 
     public void iniciar() {
         try {
@@ -113,6 +119,9 @@ public class SocketServerSide extends IMySocket {
         this.conexoes.put(contador_interno, nova_conexao);
         this.fila_escuta.add(nova_conexao);
         this.contador_interno++;
+        if(this.atualizar_conexoes != null){
+            this.atualizar_conexoes.updateConnections();
+        }
     }
 
     public void unicast(Integer id, String msg) {

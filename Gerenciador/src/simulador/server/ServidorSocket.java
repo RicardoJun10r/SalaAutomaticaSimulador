@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import util.api.SocketClientSide;
 import util.api.SocketServerSide;
 import util.api.SocketType;
+import util.api.Interface.ISocketConnectionsFunction;
 import util.api.Interface.ISocketListenFunction;
 import util.api.Interface.ISocketWriteFunction;
 
@@ -18,6 +19,8 @@ public class ServidorSocket {
     private ISocketListenFunction metodo_escutar;
 
     private ISocketWriteFunction metodo_enviar;
+
+    private ISocketConnectionsFunction atualizarConexoes;
 
     private SocketServerSide server;
 
@@ -42,12 +45,23 @@ public class ServidorSocket {
     public void addCommand(String comando) {
         synchronized (this.comandos) {
             this.comandos.add(comando);
-            this.comandos.notifyAll();
+            this.comandos.notify();
+        }
+    }
+
+    public void configurarUpdateConnections(ISocketConnectionsFunction atualizar_conexoes) {
+        this.atualizarConexoes = atualizar_conexoes;
+        if (this.server != null) {
+            this.server.configurarUpdateConnections(atualizar_conexoes);
         }
     }
 
     public void start() {
         this.server = new SocketServerSide(this.HOST, this.PORTA, SocketType.TEXTO);
+
+        if (this.atualizarConexoes != null) {
+            this.server.configurarUpdateConnections(this.atualizarConexoes);
+        }
 
         this.server.iniciar();
 
@@ -61,27 +75,10 @@ public class ServidorSocket {
                             System.out.println(
                                     "DEBUG [" + cliente.getEndereco() + ":" + cliente.getPorta() + "]: " + line);
                         }
-                        // if (line.startsWith("fwd")) {
-                        //     String[] req = line.split(";");
-                        //     if (req[1].equals("-1")) {
-                        //         this.server.broadcast("fwd;" + req[2] + ";" + req[3]);
-                        //     } else if (req[1].equals("res")) {
-                        //         String endereco = req[3].split(":")[0];
-                        //         int porta = Integer.parseInt(req[3].split(":")[1]);
-                        //         if (!this.server.verificarConexao(endereco, porta)) {
-                        //             System.out.println("adicionar conexao");
-                        //             adicionarConexao(endereco, porta);
-                        //         }
-                        //         this.server.unicast(endereco, porta, line);
-                        //     } else {
-                        //         this.server.unicast(Integer.parseInt(req[1]), "fwd;" + req[2] + ";" + req[3]);
-                        //     }
-                        // } else {
-                        //     System.out.println(
-                        //             "RECEBIDO DE [" + cliente.getEndereco() + ":" + cliente.getPorta() + "]: " + line);
-                        //         }
-                        // Atualiza o TextArea na thread JavaFX
-                        final String receivedLine = line;
+                        if(line.contains("*")){
+                            line = line.replace('*', '\n');
+                        }
+                        final String receivedLine = responses.getText() + "\n" + line;
                         javafx.application.Platform.runLater(() -> responses.setText(receivedLine));
                     }
                 }
@@ -112,7 +109,7 @@ public class ServidorSocket {
                                         this.server.broadcast(res[2]);
                                     } else {
                                         System.out.println("Enviando: " + comando);
-                                        this.server.unicast(Integer.parseInt(res[1]), comando);
+                                        this.server.unicast(Integer.parseInt(res[1]), res[2]);
                                     }
                                     break;
                                 }
@@ -146,6 +143,9 @@ public class ServidorSocket {
         nova_conexao.conectar();
         nova_conexao.configurarEntradaSaida(SocketType.TEXTO);
         this.server.adicionar(nova_conexao);
+        if (this.atualizarConexoes != null) {
+            this.server.configurarUpdateConnections(this.atualizarConexoes);
+        }
     }
 
     public Map<Integer, SocketClientSide> listarConexoes() {

@@ -24,8 +24,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import util.api.SocketClientSide;
+import util.api.Interface.ISocketConnectionsFunction;
 
-public class Servidor {
+public class Servidor implements ISocketConnectionsFunction {
 
     private Scene scene;
 
@@ -41,9 +42,17 @@ public class Servidor {
 
     private Thread serverThread;
 
+    private ObservableList<Conexao> data; // Lista observável de conexões
+
     public Servidor() {
         this.ligado = false;
+        this.data = FXCollections.observableArrayList(); // Inicializa a lista observável
         page();
+    }
+
+    @Override
+    public void updateConnections() {
+        atualizarConexoes(); // Chama o método para atualizar a tabela de conexões
     }
 
     public Scene getScene() {
@@ -75,7 +84,7 @@ public class Servidor {
         if (selectedRadioButton != null) {
             String radioButtonLabel = selectedRadioButton.getText(); // Obtém o texto do RadioButton selecionado
             String microcontroladorId = id_microcontrolador.getText(); // Obtém o texto do campo de entrada
-            if (microcontroladorId == null) {
+            if (!isNaN(microcontroladorId)) {
                 microcontroladorId = "-1";
             }
             String opcao = "";
@@ -102,9 +111,15 @@ public class Servidor {
         });
 
         VBox vBox = new VBox(10, titulo, radioButton1, radioButton2, radioButton3, id_microcontrolador, buttonGroup1);
-        vBox.setAlignment(Pos.CENTER); // Alinha o VBox no topo
+        vBox.setAlignment(Pos.CENTER);
 
         return vBox;
+    }
+
+    private Boolean isNaN(String caractere){
+        if(caractere.isEmpty()) return false;
+        else if(caractere.charAt(0) > 47 && caractere.charAt(0) < 58) return true;
+        else return false;
     }
 
     private VBox server() {
@@ -128,6 +143,10 @@ public class Servidor {
         id_microcontrolador.setPromptText("ID DO MICROCONTROLADOR");
 
         Button buttonGroup1 = new Button("ENVIAR");
+
+        buttonGroup1.setOnAction((event) -> {
+
+        });
 
         VBox vBox = new VBox(10, titulo, radioButton1, radioButton2, radioButton3, radioButton4, id_servidor,
                 id_microcontrolador, buttonGroup1);
@@ -164,9 +183,12 @@ public class Servidor {
             servidorSocket = new ServidorSocket(endereco, porta, false, responses);
 
             this.serverThread = new Thread(()->{ servidorSocket.start(); });
+            
+            // Configurar a função de atualização de conexões
+            servidorSocket.configurarUpdateConnections(this); // Passando 'this' como função de atualização
 
             this.serverThread.setDaemon(true);
-
+            
             this.serverThread.start();
 
             this.ligado = true;
@@ -208,6 +230,16 @@ public class Servidor {
         textField2Form2.setPromptText("PORTA");
 
         Button buttonForm2 = new Button("CONECTAR");
+
+        buttonForm2.setOnAction((event) -> {
+            String endereco = textField1Form2.getText();
+
+            int porta = Integer.parseInt(textField2Form2.getText());
+
+            this.servidorSocket.adicionarConexao(endereco, porta);
+
+        });
+
         VBox vBoxForm2 = new VBox(10, titulo, textField1Form2, textField2Form2, buttonForm2);
         vBoxForm2.setAlignment(Pos.CENTER);
 
@@ -234,43 +266,51 @@ public class Servidor {
         }
     }
 
-    private void response() {
+    private VBox response() {
         // Célula (2,1): TextArea
         this.responses = new TextArea();
         this.responses.setPromptText("respostas...");
         this.responses.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        Button buttonForm2 = new Button("LIMPAR");
+
+        buttonForm2.setOnAction((event) -> {
+            this.responses.setText("");
+        });
+
+        VBox vBoxForm2 = new VBox(10, responses, buttonForm2);
+        vBoxForm2.setAlignment(Pos.CENTER);
+
+        return vBoxForm2;
     }
 
+    @SuppressWarnings("unchecked")
     private void connectionsTable() {
-        // Célula (1,1): TableView com cabeçalhos "ID", "Endereço" e "Porta"
         this.tabela = new TableView<>();
-
-        // Coluna de ID
+    
         TableColumn<Conexao, Integer> colId = new TableColumn<>("ID");
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-
-        // Coluna de Endereço
+    
         TableColumn<Conexao, String> colEndereco = new TableColumn<>("Endereço");
         colEndereco.setCellValueFactory(new PropertyValueFactory<>("endereco"));
-
-        // Coluna de Porta
+    
         TableColumn<Conexao, Integer> colPorta = new TableColumn<>("Porta");
         colPorta.setCellValueFactory(new PropertyValueFactory<>("porta"));
+    
+        tabela.getColumns().addAll(colId, colEndereco, colPorta);
+    
+        tabela.setItems(this.data); // Configura a tabela para usar a lista observável
+    }
 
-        tabela.getColumns().add(colId);
-        tabela.getColumns().add(colEndereco);
-        tabela.getColumns().add(colPorta);
-
-        // Adiciona os dados do Map para a tabela
-        ObservableList<Conexao> data = FXCollections.observableArrayList();
-
-        for (Map.Entry<Integer, SocketClientSide> entry : this.servidorSocket.listarConexoes().entrySet()) {
-            Integer id = entry.getKey();
-            SocketClientSide client = entry.getValue();
-            data.add(new Conexao(id, client.getEndereco(), client.getPorta()));
-        }
-
-        tabela.setItems(data);
+    public void atualizarConexoes() {
+        javafx.application.Platform.runLater(() -> {
+            data.clear(); // Limpa a lista atual
+            for (Map.Entry<Integer, SocketClientSide> entry : servidorSocket.listarConexoes().entrySet()) {
+                Integer id = entry.getKey();
+                SocketClientSide client = entry.getValue();
+                data.add(new Conexao(id, client.getEndereco(), client.getPorta())); // Adiciona novas conexões
+            }
+        });
     }
 
     private void page() {
@@ -290,8 +330,7 @@ public class Servidor {
         gridPane.add(connectNewServer(), 0, 1); // Coluna 0, Linha 1
 
         // Célula (2,1): TextArea
-        response();
-        gridPane.add(this.responses, 2, 1); // Coluna 2, Linha 1
+        gridPane.add(response(), 2, 1); // Coluna 2, Linha 1
         GridPane.setFillWidth(this.responses, true);
         GridPane.setFillHeight(this.responses, true);
         GridPane.setHalignment(this.responses, javafx.geometry.HPos.CENTER); // Centraliza o TextArea horizontalmente
