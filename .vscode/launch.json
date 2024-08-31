@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Microcontrolador_V8_Main",
+            "request": "launch",
+            "mainClass": "simulacao_v5.microcontrolador_v8.Microcontrolador_V8_Main",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "Server_V8_Main",
+            "request": "launch",
+            "mainClass": "simulacao_v5.server_v8.Server_V8_Main",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
             "name": "MicrocontroladorMain",
             "request": "launch",
             "mainClass": "simulador.client.MicrocontroladorMain",

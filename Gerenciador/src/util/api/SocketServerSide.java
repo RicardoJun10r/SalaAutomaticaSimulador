@@ -162,6 +162,11 @@ public class SocketServerSide extends IMySocket {
                 (id, conexao) -> conexao.enviarMensagem(msg));
     }
 
+    public void broadcast(Object obj) {
+        this.conexoes.forEach(
+                (id, conexao) -> conexao.enviarObjeto(obj));
+    }
+
     public Boolean verificarConexao(String endereco, int porta) {
         for (SocketClientSide cliente : conexoes.values()) {
             if (cliente.getEndereco().equals(endereco) && cliente.getPorta() == porta) {
