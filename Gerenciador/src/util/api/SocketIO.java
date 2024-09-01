@@ -1,6 +1,7 @@
 package util.api;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.ObjectOutputStream;
@@ -47,11 +48,20 @@ public class SocketIO {
         Object object = null;
         try {
             object = this.leitor_objeto.readObject();
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (EOFException e) {
+            System.out.println("Conexão foi encerrada inesperadamente pelo cliente.");
+            e.printStackTrace();
+            return null; // Retorne explicitamente null em caso de EOFException
+        } catch (ClassNotFoundException e) {
+            System.out.println("Erro: Classe não encontrada durante a desserialização.");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Erro de I/O ao receber objeto.");
             e.printStackTrace();
         }
         return object;
     }
+    
 
     public void configurarTexto(Socket socket) {
         try {
@@ -79,20 +89,24 @@ public class SocketIO {
         return escritor_texto;
     }
 
-    public ObjectOutputStream getLeitor_objeto() {
+    public ObjectOutputStream getEscritor_objeto() {
         return escritor_objeto;
     }
-
-    public ObjectInputStream getEscritor_objeto() {
+    
+    public ObjectInputStream getLeitor_objeto() {
         return leitor_objeto;
     }
 
     public void fechar() {
         try {
-            if(this.escritor_objeto != null) this.escritor_objeto.close();
-            if(this.escritor_texto != null) this.escritor_texto.close();
-            if(this.leitor_objeto != null) this.leitor_objeto.close();
-            if(this.leitor_texto != null) this.leitor_texto.close();
+            if (this.escritor_objeto != null)
+                this.escritor_objeto.close();
+            if (this.escritor_texto != null)
+                this.escritor_texto.close();
+            if (this.leitor_objeto != null)
+                this.leitor_objeto.close();
+            if (this.leitor_texto != null)
+                this.leitor_texto.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

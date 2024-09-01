@@ -48,7 +48,7 @@ public class Microcontrolador_V8 {
                 System.out.println("Digite algo:");
                 msg = this.scan.nextLine();
                 this.socket.enviarObjeto(new Mensagem(this.HOST, this.PORTA, "text", msg));
-            } while (msg.equalsIgnoreCase("sair"));
+            } while (!msg.equalsIgnoreCase("sair"));
         };
 
         this.socket.configurarMetodoEscutar(metodo_escutar);
@@ -56,7 +56,7 @@ public class Microcontrolador_V8 {
         this.socket.configurarMetodoEnviar(metodo_enviar);
 
         this.socket.escutar();
-
+        
         this.socket.enviar();
     }
 

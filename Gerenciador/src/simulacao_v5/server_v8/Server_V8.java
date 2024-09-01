@@ -28,7 +28,7 @@ public class Server_V8 {
 
         this.metodo_escutar = () -> {
             while (true) {
-                SocketClientSide cliente = this.server.filaRequisicoes();
+                SocketClientSide cliente = this.server.filaClientes();
                 if(cliente != null){
                     Mensagem line;
                     while((line = (Mensagem) cliente.receberObjeto()) != null){

@@ -36,9 +36,11 @@ public class SocketServerSide extends IMySocket {
 
     private SocketType TIPO;
 
+    private final int NUMERO_THREADS = 4;
+
     public SocketServerSide(String endereco, int porta, SocketType TIPO) {
         super(endereco, porta);
-        this.executorService = Executors.newVirtualThreadPerTaskExecutor();
+        this.executorService = Executors.newFixedThreadPool(NUMERO_THREADS);
         this.conexoes = Collections.synchronizedMap(new HashMap<>());
         this.fila_escuta = new ConcurrentLinkedQueue<>();
         this.contador_interno = 0;
@@ -48,7 +50,7 @@ public class SocketServerSide extends IMySocket {
 
     public Map<Integer, SocketClientSide> getConexoes(){ return this.conexoes; }
 
-    public SocketClientSide filaRequisicoes() {
+    public SocketClientSide filaClientes() {
         synchronized (this.fila_escuta) {
             while (this.fila_escuta.isEmpty()) {
                 try {
@@ -82,7 +84,7 @@ public class SocketServerSide extends IMySocket {
 
     public void enviar() {
         if (this.metodo_enviar != null) {
-            this.executorService.submit(
+            this.executorService.execute(
                     () -> {
                         while (true) {
                             this.metodo_enviar.enviar();
@@ -100,8 +102,7 @@ public class SocketServerSide extends IMySocket {
                 try {
                     SocketClientSide socketClientSide = new SocketClientSide(this.server.accept());
                     adicionarConexao(socketClientSide);
-                    // this.executorService.submit(() -> this.metodo_escutar.escutar());
-                    new Thread(() -> {this.metodo_escutar.escutar();}).start();
+                    this.executorService.execute(() -> this.metodo_escutar.escutar());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -113,7 +114,7 @@ public class SocketServerSide extends IMySocket {
 
     public void fechar() {
         try {
-            this.executorService.close();
+            this.executorService.shutdown();
             this.server.close();
         } catch (IOException e) {
             e.printStackTrace();
