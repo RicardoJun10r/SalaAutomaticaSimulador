@@ -2,7 +2,7 @@ package simulacao_v5.microcontrolador_v8;
 
 import java.util.Scanner;
 
-import simulacao_v5.Mensagem;
+import util.Mensagem;
 import util.api.SocketClientSide;
 import util.api.SocketType;
 import util.api.Interface.ISocketListenFunction;
@@ -39,15 +39,16 @@ public class Microcontrolador_V8 {
             Mensagem line;
             while ((line = (Mensagem) this.socket.receberObjeto()) != null) {
                 System.out.println(line.getEndereco() + ":" + line.getPorta() + "[" + line.getHorario().toString() + "]: " + line.getMensagem());
+                System.out.println("Digite algo:");
             }
         };
 
         this.metodo_enviar = () -> {
             String msg = "";
+            System.out.println("Digite algo:");
             do {
-                System.out.println("Digite algo:");
                 msg = this.scan.nextLine();
-                this.socket.enviarObjeto(new Mensagem(this.HOST, this.PORTA, "text", msg));
+                this.socket.enviarObjeto(new Mensagem(this.HOST, this.socket.getSocket().getLocalPort(), "text", msg));
             } while (!msg.equalsIgnoreCase("sair"));
         };
 
@@ -55,9 +56,9 @@ public class Microcontrolador_V8 {
 
         this.socket.configurarMetodoEnviar(metodo_enviar);
 
-        this.socket.escutar();
-        
         this.socket.enviar();
+        
+        this.socket.escutar();
     }
 
 }

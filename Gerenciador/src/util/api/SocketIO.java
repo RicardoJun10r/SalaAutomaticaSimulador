@@ -51,7 +51,8 @@ public class SocketIO {
         } catch (EOFException e) {
             System.out.println("Conexão foi encerrada inesperadamente pelo cliente.");
             e.printStackTrace();
-            return null; // Retorne explicitamente null em caso de EOFException
+            this.fechar();
+            return null;
         } catch (ClassNotFoundException e) {
             System.out.println("Erro: Classe não encontrada durante a desserialização.");
             e.printStackTrace();

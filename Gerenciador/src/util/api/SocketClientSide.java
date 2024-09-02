@@ -35,7 +35,7 @@ public class SocketClientSide extends IMySocket {
     }
 
     public SocketClientSide(Socket socket){
-        super(socket.getLocalAddress().toString(), socket.getPort());
+        super(socket.getLocalAddress().toString(), socket.getLocalPort());
         this.socket = socket;
         this.entrada_saida = new SocketIO();
         this.executorService = Executors.newFixedThreadPool(NUMERO_THREADS);
@@ -50,6 +50,8 @@ public class SocketClientSide extends IMySocket {
             System.out.println("ERRO NA CONEXÃO: " + e.getMessage());
         }
     }
+
+    public Socket getSocket(){ return this.socket; }
     
     public void configurarMetodoEscutar(ISocketListenFunction metodo_escutar){ this.metodo_escutar = metodo_escutar; }
 
@@ -103,9 +105,7 @@ public class SocketClientSide extends IMySocket {
         if(this.metodo_enviar != null){
             this.executorService.execute(
                 () -> {
-                    while (true) {
-                        this.metodo_enviar.enviar();
-                    }
+                    this.metodo_enviar.enviar();
                 }
             );
         } else {
@@ -117,9 +117,7 @@ public class SocketClientSide extends IMySocket {
         if(this.metodo_escutar != null){
             this.executorService.execute(
                 () -> {
-                    while (true) {
-                        this.metodo_escutar.escutar();
-                    }
+                    this.metodo_escutar.escutar();
                 }
             );
         } else {

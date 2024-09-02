@@ -1,6 +1,6 @@
 package simulacao_v5.server_v8;
 
-import simulacao_v5.Mensagem;
+import util.Mensagem;
 import util.api.SocketClientSide;
 import util.api.SocketServerSide;
 import util.api.SocketType;
@@ -27,14 +27,12 @@ public class Server_V8 {
         this.server.iniciar();
 
         this.metodo_escutar = () -> {
-            while (true) {
-                SocketClientSide cliente = this.server.filaClientes();
-                if(cliente != null){
-                    Mensagem line;
-                    while((line = (Mensagem) cliente.receberObjeto()) != null){
-                        System.out.println(line.toString());
-                        this.server.broadcast(line);
-                    }
+            SocketClientSide cliente = this.server.filaClientes();
+            if(cliente != null){
+                Mensagem line;
+                while((line = (Mensagem) cliente.receberObjeto()) != null){
+                    System.out.println(line.toString());
+                    this.server.broadcast(line);
                 }
             }
         };

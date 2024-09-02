@@ -1,4 +1,4 @@
-package simulacao_v5;
+package util;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

@@ -86,9 +86,7 @@ public class SocketServerSide extends IMySocket {
         if (this.metodo_enviar != null) {
             this.executorService.execute(
                     () -> {
-                        while (true) {
-                            this.metodo_enviar.enviar();
-                        }
+                        this.metodo_enviar.enviar();
                     });
         } else {
             System.out.println("ERRO: MÉTODO DO TIPO [ISocketWriteFunction] NÃO CONFIGURADO!");
@@ -134,8 +132,12 @@ public class SocketServerSide extends IMySocket {
             if (this.atualizar_conexoes != null) {
                 this.atualizar_conexoes.updateConnections();
             }
-            this.fila_escuta.notify();
+            this.fila_escuta.notifyAll();
         }
+    }
+
+    public void unicast(Integer id, Object obj){
+        this.conexoes.get(id).enviarObjeto(obj);
     }
 
     public void unicast(Integer id, String msg) {
@@ -148,6 +150,16 @@ public class SocketServerSide extends IMySocket {
             if (cliente.getEndereco().equals(endereco) && cliente.getPorta() == porta) {
                 System.out.println("enviando: " + endereco + ":" + porta);
                 cliente.enviarMensagem(msg);
+            }
+        }
+    }
+
+    public void unicast(String endereco, int porta, Object obj) {
+        System.out.println("tentar enviar");
+        for (SocketClientSide cliente : conexoes.values()) {
+            if (cliente.getEndereco().equals(endereco) && cliente.getPorta() == porta) {
+                System.out.println("enviando: " + endereco + ":" + porta);
+                cliente.enviarObjeto(obj);
             }
         }
     }
@@ -180,7 +192,7 @@ public class SocketServerSide extends IMySocket {
     public void listarConexoes() {
         this.conexoes.forEach(
                 (id, conexao) -> System.out
-                        .println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getPorta() + "]"));
+                        .println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getSocket().getLocalPort() + "]"));
     }
 
 }
