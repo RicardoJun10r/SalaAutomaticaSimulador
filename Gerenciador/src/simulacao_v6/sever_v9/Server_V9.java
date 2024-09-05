@@ -46,16 +46,19 @@ public class Server_V9 {
                     if(DEBUG){
                         System.out.println("DEBUG [" + cliente.getEndereco() + ":" + cliente.getPorta() + "]: " + line.toString());
                     }
-                    if(line.getHeaders().equalsIgnoreCase("fwd")){
-                        if(line.getMicrocontrolador_id() > 0){
+                    if(line.getHeaders().equalsIgnoreCase("res")){
+                        System.out.println(line.getMensagem());
+                    } else if(line.getHeaders().equalsIgnoreCase("fwd")){
+                        if(line.getMicrocontrolador_id() <= 2){
                             this.server.unicast(line.getMicrocontrolador_id(), line);
                         } else {
                             this.server.broadcast(line);
                         }
-                    } else if(line.getHeaders().equalsIgnoreCase("res")){
-                        this.server.unicast(line.getEndereco(), line.getPorta(), line);
-                    } else {
-                        System.out.println(line.toString());
+                    } else if(line.getHeaders().equalsIgnoreCase("mic")){
+                        if(!this.server.verificarConexao(line.getEndereco(), line.getPorta())){
+                            adicionarConexao(line.getEndereco(), line.getPorta());
+                        }
+                        this.server.unicast(line.getEndereco(), line.getPorta(), new ServerReq(this.HOST, line.getPorta(), "res", line.toString(), -1, -1));
                     }
                 }
             }

@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -48,7 +49,9 @@ public class SocketServerSide extends IMySocket {
         this.atualizar_conexoes = null;
     }
 
-    public Map<Integer, SocketClientSide> getConexoes(){ return this.conexoes; }
+    public Map<Integer, SocketClientSide> getConexoes() {
+        return this.conexoes;
+    }
 
     public SocketClientSide filaClientes() {
         synchronized (this.fila_escuta) {
@@ -63,7 +66,9 @@ public class SocketServerSide extends IMySocket {
         }
     }
 
-    public void configurarUpdateConnections(ISocketConnectionsFunction atualizar_conexoes){ this.atualizar_conexoes = atualizar_conexoes; }
+    public void configurarUpdateConnections(ISocketConnectionsFunction atualizar_conexoes) {
+        this.atualizar_conexoes = atualizar_conexoes;
+    }
 
     public void iniciar() {
         try {
@@ -136,7 +141,7 @@ public class SocketServerSide extends IMySocket {
         }
     }
 
-    public void unicast(Integer id, Object obj){
+    public void unicast(Integer id, Object obj) {
         this.conexoes.get(id).enviarObjeto(obj);
     }
 
@@ -146,22 +151,25 @@ public class SocketServerSide extends IMySocket {
 
     public void unicast(String endereco, int porta, String msg) {
         System.out.println("tentar enviar");
-        for (SocketClientSide cliente : conexoes.values()) {
-            if (cliente.getEndereco().equals(endereco) && cliente.getPorta() == porta) {
-                System.out.println("enviando: " + endereco + ":" + porta);
-                cliente.enviarMensagem(msg);
-            }
-        }
+        System.out.println("tentar enviar");
+        this.conexoes.values()
+                .stream()
+                .filter(
+                        conexao -> conexao.getEndereco().equals(endereco) && conexao.getPorta() == porta)
+                .findFirst()
+                .get()
+                .enviarMensagem(msg);
     }
 
     public void unicast(String endereco, int porta, Object obj) {
         System.out.println("tentar enviar");
-        for (SocketClientSide cliente : conexoes.values()) {
-            if (cliente.getEndereco().equals(endereco) && cliente.getPorta() == porta) {
-                System.out.println("enviando: " + endereco + ":" + porta);
-                cliente.enviarObjeto(obj);
-            }
-        }
+        this.conexoes.values()
+                .stream()
+                .filter(
+                        conexao -> conexao.getEndereco().equals(endereco) && conexao.getPorta() == porta)
+                .findFirst()
+                .get()
+                .enviarObjeto(obj);
     }
 
     public void multicast(Integer[] id, String msg) {
@@ -181,18 +189,22 @@ public class SocketServerSide extends IMySocket {
     }
 
     public Boolean verificarConexao(String endereco, int porta) {
-        for (SocketClientSide cliente : conexoes.values()) {
-            if (cliente.getEndereco().equals(endereco) && cliente.getPorta() == porta) {
-                return true;
-            }
+        Optional<SocketClientSide> cliente = this.conexoes.values()
+                .stream()
+                .filter(
+                        conexao -> conexao.getEndereco().equals(endereco) && conexao.getPorta() == porta)
+                .findFirst();
+        if (cliente.isPresent()) {
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     public void listarConexoes() {
         this.conexoes.forEach(
                 (id, conexao) -> System.out
-                        .println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getSocket().getLocalPort() + "]"));
+                        .println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getSocket().getPort() + "]"));
     }
 
 }

@@ -44,7 +44,7 @@ public class Microcontrolador_V9 {
                     System.out.println(line.toString());
                 }
                 if (line.getHeaders().equalsIgnoreCase("fwd"))
-                    line.setHeaders("res");
+                    line.setHeaders("mic");
                 switch (line.getOpcao()) {
                     case 0, 4: {
                         this.socket.enviarObjeto(
