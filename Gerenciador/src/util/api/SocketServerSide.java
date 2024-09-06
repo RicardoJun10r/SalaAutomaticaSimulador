@@ -37,7 +37,7 @@ public class SocketServerSide extends IMySocket {
 
     private SocketType TIPO;
 
-    private final int NUMERO_THREADS = 4;
+    private final int NUMERO_THREADS = 6;
 
     public SocketServerSide(String endereco, int porta, SocketType TIPO) {
         super(endereco, porta);
@@ -125,11 +125,11 @@ public class SocketServerSide extends IMySocket {
     }
 
     public void adicionar(SocketClientSide nova_conexao) {
+        nova_conexao.configurarEntradaSaida(SocketType.OBJETO);
         this.adicionarConexao(nova_conexao);
     }
 
     private void adicionarConexao(SocketClientSide nova_conexao) {
-        nova_conexao.configurarEntradaSaida(TIPO);
         synchronized (this.fila_escuta) {
             this.conexoes.put(contador_interno, nova_conexao);
             this.fila_escuta.add(nova_conexao);
@@ -137,7 +137,7 @@ public class SocketServerSide extends IMySocket {
             if (this.atualizar_conexoes != null) {
                 this.atualizar_conexoes.updateConnections();
             }
-            this.fila_escuta.notifyAll();
+            this.fila_escuta.notify();
         }
     }
 

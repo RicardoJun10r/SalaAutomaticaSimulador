@@ -8,7 +8,7 @@ public class Microcontrolador_V9_Main {
 
         sala.encherSala();
 
-        Microcontrolador_V9 microcontrolador_V9 = new Microcontrolador_V9("127.0.0.1", 5001, 2, sala, true);
+        Microcontrolador_V9 microcontrolador_V9 = new Microcontrolador_V9("127.0.0.1", 5000, 1, sala, true);
 
         microcontrolador_V9.start();
     }

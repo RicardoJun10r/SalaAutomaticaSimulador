@@ -130,7 +130,6 @@ public class Server_V9 {
     private void adicionarConexao(String endereco, int porta){
         SocketClientSide nova_conexao = new SocketClientSide(endereco, porta);
         nova_conexao.conectar();
-        nova_conexao.configurarEntradaSaida(SocketType.TEXTO);
         this.server.adicionar(nova_conexao);
     }
 
