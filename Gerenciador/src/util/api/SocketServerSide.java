@@ -7,10 +7,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import util.api.Interface.IMySocket;
 import util.api.Interface.ISocketConnectionsFunction;
@@ -23,7 +23,7 @@ public class SocketServerSide extends IMySocket {
 
     private Map<Integer, SocketClientSide> conexoes;
 
-    private Queue<SocketClientSide> fila_escuta;
+    private BlockingQueue<SocketClientSide> fila_escuta;
 
     private Integer contador_interno;
 
@@ -43,7 +43,7 @@ public class SocketServerSide extends IMySocket {
         super(endereco, porta);
         this.executorService = Executors.newFixedThreadPool(NUMERO_THREADS);
         this.conexoes = Collections.synchronizedMap(new HashMap<>());
-        this.fila_escuta = new ConcurrentLinkedQueue<>();
+        this.fila_escuta = new LinkedBlockingQueue<>();
         this.contador_interno = 0;
         this.TIPO = TIPO;
         this.atualizar_conexoes = null;
@@ -54,15 +54,12 @@ public class SocketServerSide extends IMySocket {
     }
 
     public SocketClientSide filaClientes() {
-        synchronized (this.fila_escuta) {
-            while (this.fila_escuta.isEmpty()) {
-                try {
-                    this.fila_escuta.wait();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return this.fila_escuta.poll();
+        try {
+            return this.fila_escuta.take();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -104,6 +101,7 @@ public class SocketServerSide extends IMySocket {
             while (true) {
                 try {
                     SocketClientSide socketClientSide = new SocketClientSide(this.server.accept());
+                    socketClientSide.configurarEntradaSaida(TIPO);
                     adicionarConexao(socketClientSide);
                     this.executorService.execute(() -> this.metodo_escutar.escutar());
                 } catch (IOException e) {
@@ -125,19 +123,21 @@ public class SocketServerSide extends IMySocket {
     }
 
     public void adicionar(SocketClientSide nova_conexao) {
-        nova_conexao.configurarEntradaSaida(SocketType.OBJETO);
+        nova_conexao.configurarEntradaSaida(TIPO);
         this.adicionarConexao(nova_conexao);
     }
-
+    
     private void adicionarConexao(SocketClientSide nova_conexao) {
-        synchronized (this.fila_escuta) {
-            this.conexoes.put(contador_interno, nova_conexao);
-            this.fila_escuta.add(nova_conexao);
-            this.contador_interno++;
-            if (this.atualizar_conexoes != null) {
-                this.atualizar_conexoes.updateConnections();
-            }
-            this.fila_escuta.notify();
+        this.conexoes.put(contador_interno, nova_conexao);
+        try {
+            this.fila_escuta.put(nova_conexao);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            e.printStackTrace();
+        }
+        this.contador_interno++;
+        if (this.atualizar_conexoes != null) {
+            this.atualizar_conexoes.updateConnections();
         }
     }
 
@@ -150,7 +150,6 @@ public class SocketServerSide extends IMySocket {
     }
 
     public void unicast(String endereco, int porta, String msg) {
-        System.out.println("tentar enviar");
         System.out.println("tentar enviar");
         this.conexoes.values()
                 .stream()

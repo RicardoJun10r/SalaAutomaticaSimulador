@@ -57,6 +57,7 @@ public class Server_V9 {
                     } else if(line.getHeaders().equalsIgnoreCase("mic")){
                         if(!this.server.verificarConexao(line.getEndereco(), line.getPorta())){
                             adicionarConexao(line.getEndereco(), line.getPorta());
+                            this.server.unicast(line.getEndereco(), line.getPorta(), new ServerReq(this.HOST, line.getPorta(), "res", line.toString(), -1, -1));
                         }
                         this.server.unicast(line.getEndereco(), line.getPorta(), new ServerReq(this.HOST, line.getPorta(), "res", line.toString(), -1, -1));
                     }

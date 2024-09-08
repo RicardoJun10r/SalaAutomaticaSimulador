@@ -9,6 +9,20 @@
             "name": "Microcontrolador_V9_Main",
             "request": "launch",
             "mainClass": "simulacao_v6.microcontrolador_v9.Microcontrolador_V9_Main",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "Server_V9_Main",
+            "request": "launch",
+            "mainClass": "simulacao_v6.sever_v9.Server_V9_Main",
+            "projectName": "SalaAutomaticaSimulador_ba2a9433"
+        },
+        {
+            "type": "java",
+            "name": "Microcontrolador_V9_Main",
+            "request": "launch",
+            "mainClass": "simulacao_v6.microcontrolador_v9.Microcontrolador_V9_Main",
             "projectName": "SalaAutomaticaSimulador_76b39a58"
         },
         {
