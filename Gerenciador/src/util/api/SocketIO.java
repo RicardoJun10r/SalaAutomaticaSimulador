@@ -76,6 +76,7 @@ public class SocketIO {
     public void configurarObjeto(Socket socket) {
         try {
             this.escritor_objeto = new ObjectOutputStream(socket.getOutputStream());
+            this.escritor_objeto.flush();
             this.leitor_objeto = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
             e.printStackTrace();

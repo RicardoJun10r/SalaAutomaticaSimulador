@@ -35,7 +35,7 @@ public class SocketClientSide extends IMySocket {
     }
 
     public SocketClientSide(Socket socket){
-        super(socket.getLocalAddress().toString(), socket.getLocalPort());
+        super(socket.getInetAddress().getHostAddress(), socket.getPort());
         this.socket = socket;
         this.entrada_saida = new SocketIO();
         this.executorService = Executors.newFixedThreadPool(NUMERO_THREADS);

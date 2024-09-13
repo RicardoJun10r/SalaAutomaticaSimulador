@@ -167,8 +167,10 @@ public class SocketServerSide extends IMySocket {
                 .filter(
                         conexao -> conexao.getEndereco().equals(endereco) && conexao.getPorta() == porta)
                 .findFirst()
-                .get()
-                .enviarObjeto(obj);
+                .ifPresentOrElse(
+                    conexao -> conexao.enviarObjeto(obj),
+                    () -> System.out.println("Cliente não encontrado para o endereço e porta especificados.")
+                );
     }
 
     public void multicast(Integer[] id, String msg) {
@@ -203,7 +205,7 @@ public class SocketServerSide extends IMySocket {
     public void listarConexoes() {
         this.conexoes.forEach(
                 (id, conexao) -> System.out
-                        .println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getSocket().getPort() + "]"));
+                        .println(id + " --> [" + conexao.getEndereco() + ":" + conexao.getPorta() + "]"));
     }
 
 }
