@@ -41,7 +41,7 @@ public class SocketServerSide extends IMySocket {
 
     public SocketServerSide(String endereco, int porta, SocketType TIPO) {
         super(endereco, porta);
-        this.executorService = Executors.newFixedThreadPool(NUMERO_THREADS);
+        this.executorService = Executors.newVirtualThreadPerTaskExecutor();
         this.conexoes = Collections.synchronizedMap(new HashMap<>());
         this.fila_escuta = new LinkedBlockingQueue<>();
         this.contador_interno = 0;
@@ -69,7 +69,7 @@ public class SocketServerSide extends IMySocket {
 
     public void iniciar() {
         try {
-            this.server = new ServerSocket(super.getPorta(), 50, InetAddress.getByName(super.getEndereco()));
+            this.server = new ServerSocket(super.getPorta(), 0, InetAddress.getByName(super.getEndereco()));
             System.out.println("INICIADO SERVIDOR NO IP: [" + super.getEndereco() + ":" + super.getPorta() + "]...");
         } catch (IOException e) {
             e.printStackTrace();
@@ -129,12 +129,7 @@ public class SocketServerSide extends IMySocket {
     
     private void adicionarConexao(SocketClientSide nova_conexao) {
         this.conexoes.put(contador_interno, nova_conexao);
-        try {
-            this.fila_escuta.put(nova_conexao);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            e.printStackTrace();
-        }
+        this.fila_escuta.add(nova_conexao);
         this.contador_interno++;
         if (this.atualizar_conexoes != null) {
             this.atualizar_conexoes.updateConnections();

@@ -1,11 +1,6 @@
-package simulador.server;
-
-import java.util.Map;
+package simulador_v2.server;
 
 import javafx.scene.control.TextArea;
-
-import java.util.Arrays;
-
 import util.api.SocketClientSide;
 import util.api.SocketServerSide;
 import util.api.SocketType;
@@ -14,9 +9,10 @@ import util.api.Interface.ISocketListenFunction;
 import util.api.Interface.ISocketWriteFunction;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Map;
+import java.util.Arrays;
 
-public class ServidorSocket {
-
+public class Servidor {
     private ISocketListenFunction metodo_escutar;
 
     private ISocketWriteFunction metodo_enviar;
@@ -35,7 +31,7 @@ public class ServidorSocket {
 
     private TextArea responses;
 
-    public ServidorSocket(String host, int porta, boolean debug, TextArea responses) {
+    public Servidor(String host, int porta, boolean debug, TextArea responses) {
         this.PORTA = porta;
         this.HOST = host;
         this.DEBUG = debug;
@@ -161,5 +157,4 @@ public class ServidorSocket {
     public Map<Integer, SocketClientSide> listarConexoes() {
         return this.server.getConexoes();
     }
-
 }

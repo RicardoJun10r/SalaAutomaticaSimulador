@@ -6,6 +6,14 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "simulador_v2.Main",
+            "projectName": "SalaAutomaticaSimulador_76b39a58",
+            "vmArgs": "--module-path ./javafx-sdk-21.0.4/lib/ --add-modules javafx.controls"
+        },
+        {
+            "type": "java",
             "name": "Microcontrolador_V9_Main",
             "request": "launch",
             "mainClass": "simulacao_v6.microcontrolador_v9.Microcontrolador_V9_Main",

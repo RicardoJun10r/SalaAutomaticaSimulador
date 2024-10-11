@@ -25,7 +25,7 @@ public class SocketClientSide extends IMySocket {
 
     private ExecutorService executorService;
 
-    private final int NUMERO_THREADS = 2;
+    private final int NUMERO_THREADS = 6;
 
     public SocketClientSide(String endereco, int porta) {
         super(endereco, porta);
