@@ -61,23 +61,21 @@ public class Servidor {
         this.server.iniciar();
 
         this.metodo_escutar = () -> {
-            while (true) {
-                SocketClientSide cliente = this.server.filaClientes();
-                if (cliente != null) {
-                    ServerReq line;
-                    while ((line = (ServerReq) cliente.receberObjeto()) != null) {
-                        if (DEBUG) {
-                            System.out.println(
-                                    "DEBUG [" + cliente.getEndereco() + ":" + cliente.getPorta() + "]: " + line);
-                        }
-                        final String receivedLine = responses.getText() + "\n" + line.getMensagem();
-                        Platform.runLater(() -> responses.setText(receivedLine));
+            SocketClientSide cliente = this.server.filaClientes();
+            if (cliente != null) {
+                ServerReq line;
+                while ((line = (ServerReq) cliente.receberObjeto()) != null) {
+                    if (DEBUG) {
+                        System.out.println(
+                                "DEBUG [" + cliente.getEndereco() + ":" + cliente.getPorta() + "]: " + line);
+                    }
+                    final String receivedLine = responses.getText() + "\n" + line.getMensagem();
+                    Platform.runLater(() -> responses.setText(receivedLine));
 
-                        if (line.getOpcao() == 2) { // 2 representa a operação "Descrever"
-                            String resposta = line.getMensagem();
+                    if (line.getOpcao() == 2) { // 2 representa a operação "Descrever"
+                        String resposta = line.getMensagem();
 
-                            processarDescricaoSala(line.getMicrocontrolador_id(), resposta);
-                        }
+                        processarDescricaoSala(line.getMicrocontrolador_id(), resposta);
                     }
                 }
             }

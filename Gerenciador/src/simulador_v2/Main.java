@@ -221,8 +221,8 @@ public class Main extends Application {
 
         Label group1Label = new Label("Opções:");
         ToggleGroup opcao_microcontrolador = new ToggleGroup();
-        RadioButton ligar = new RadioButton("Desligar");
-        RadioButton desligar = new RadioButton("Ligar");
+        RadioButton ligar = new RadioButton("Ligar");
+        RadioButton desligar = new RadioButton("Desligar");
         RadioButton descrever = new RadioButton("Descrever");
         ligar.setToggleGroup(opcao_microcontrolador);
         desligar.setToggleGroup(opcao_microcontrolador);

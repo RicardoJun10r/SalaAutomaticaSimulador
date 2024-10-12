@@ -112,7 +112,6 @@ public class SocketServerSide extends IMySocket {
             System.out.println("ERRO: MÉTODO DO TIPO [ISocketListenFunction] NÃO CONFIGURADO!");
         }
     }
-    
 
     public void fechar() {
         try {
@@ -137,7 +136,6 @@ public class SocketServerSide extends IMySocket {
             }
         }
     }
-    
 
     public void unicast(Integer id, Object obj) {
         this.conexoes.get(id).enviarObjeto(obj);
