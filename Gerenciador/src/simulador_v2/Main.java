@@ -1,5 +1,3 @@
-// Classe Main.java atualizada
-
 package simulador_v2;
 
 import javafx.application.Application;
@@ -33,17 +31,14 @@ public class Main extends Application {
     private String endereco;
     private int porta;
 
-    // ObservableLists para atualizar as tabelas
     private ObservableList<Device> conexoesList = FXCollections.observableArrayList();
     private ObservableList<Appliance> dispositivosList = FXCollections.observableArrayList();
 
-    // Referência para as tabelas
     private TableView<Device> tabela_conexoes;
     private TableView<Appliance> tabela_dispositivos;
 
     @Override
     public void start(Stage primaryStage) {
-        // Criação do layout raiz
         BorderPane root = new BorderPane();
 
         // AppBar no topo
@@ -78,27 +73,22 @@ public class Main extends Application {
         Button microcontrolador = new Button("Microcontrolador");
         Button sair = new Button("Sair");
 
-        // Eventos para os botões
         ligar.setOnAction(e -> ligarDialog());
         microcontrolador.setOnAction(e -> microcontroladorDialog());
         sair.setOnAction(e -> Platform.exit());
 
         sideBar.getChildren().addAll(ligar, microcontrolador, sair);
 
-        // Grid 2x2 no centro
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10));
         grid.setVgap(10);
         grid.setHgap(10);
 
-        // Ajustar o grid para ocupar todo o espaço disponível
         grid.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         grid.setAlignment(Pos.CENTER);
 
-        // Aplicar sombreamento ao grid
         grid.setEffect(new DropShadow());
 
-        // Configurar restrições de linhas e colunas
         for (int i = 0; i < 2; i++) {
             RowConstraints rowConstraints = new RowConstraints();
             rowConstraints.setPercentHeight(50);
@@ -109,15 +99,12 @@ public class Main extends Application {
             grid.getColumnConstraints().add(colConstraints);
         }
 
-        // Célula 1: Tabela com id, endereço e porta
         tabela_conexoes = tabelaConexoes();
         grid.add(tabela_conexoes, 0, 0);
 
-        // Célula 2: Tabela com id, aparelhos, ligados e desligados
         tabela_dispositivos = tabelaDispositivos();
         grid.add(tabela_dispositivos, 1, 0);
 
-        // Célula 3: TextArea
         responses = new TextArea();
         grid.add(responses, 0, 1);
 
@@ -126,7 +113,6 @@ public class Main extends Application {
         cell4.setStyle("-fx-border-color: black; -fx-alignment: center;");
         grid.add(cell4, 1, 1);
 
-        // Ajustar as células para expandir
         for (int row = 0; row < 2; row++) {
             for (int col = 0; col < 2; col++) {
                 GridPane.setHgrow(grid.getChildren().get(row * 2 + col), Priority.ALWAYS);
@@ -134,12 +120,10 @@ public class Main extends Application {
             }
         }
 
-        // Permitir que o grid expanda
         root.setCenter(grid);
         BorderPane.setAlignment(grid, Pos.CENTER);
         BorderPane.setMargin(grid, new Insets(10));
 
-        // Adicionando os componentes ao layout raiz
         root.setTop(appBar);
         root.setLeft(sideBar);
 
@@ -149,13 +133,11 @@ public class Main extends Application {
         primaryStage.setTitle("Simulador");
         primaryStage.setScene(scene);
 
-        // Iniciar em modo tela cheia
         primaryStage.setFullScreen(true);
 
         primaryStage.show();
     }
 
-    // Método para abrir o diálogo da Opção 1
     private void ligarDialog() {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
@@ -178,7 +160,6 @@ public class Main extends Application {
                 porta = Integer.parseInt(port);
                 this.servidor = new Servidor(endereco, porta, false, responses);
 
-                // Atualizar a tabela de conexões quando houver mudanças
                 servidor.configurarUpdateConnections(() -> {
                     Platform.runLater(() -> {
                         conexoesList.clear();
@@ -187,15 +168,10 @@ public class Main extends Application {
                         });
                     });
                 });
-
-                // Configurar o callback para atualizar a tabela de dispositivos
                 servidor.configurarAtualizarTabelaDispositivos(appliance -> {
-                    // Já estamos dentro do Platform.runLater no método processarDescricaoSala
-                    // Verificar se já existe um registro para o ID da sala
                     boolean salaExistente = false;
                     for (Appliance a : dispositivosList) {
                         if (a.getId().equals(appliance.getId())) {
-                            // Atualizar os valores
                             a.setOn(appliance.getOn());
                             a.setOff(appliance.getOff());
                             salaExistente = true;
@@ -203,10 +179,8 @@ public class Main extends Application {
                         }
                     }
                     if (!salaExistente) {
-                        // Adicionar novo registro
                         dispositivosList.add(appliance);
                     }
-                    // Não é necessário chamar tabela_dispositivos.refresh() pois as propriedades são observáveis
                 });
                 
 
@@ -240,13 +214,11 @@ public class Main extends Application {
         dialog.showAndWait();
     }
 
-    // Método para abrir o diálogo da Opção 2
     private void microcontroladorDialog() {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Microcontrolador");
 
-        // Primeiro Radio Group dentro de um Card
         Label group1Label = new Label("Opções:");
         ToggleGroup opcao_microcontrolador = new ToggleGroup();
         RadioButton ligar = new RadioButton("Desligar");
@@ -259,14 +231,12 @@ public class Main extends Application {
         VBox group1Box = new VBox(5, ligar, desligar, descrever);
         group1Box.setAlignment(Pos.CENTER);
 
-        // Estilo do Card para o Grupo 1
         VBox card1 = new VBox(10, group1Label, group1Box);
         card1.setAlignment(Pos.CENTER);
         card1.setPadding(new Insets(10));
         card1.setStyle(
                 "-fx-border-color: #ccc; -fx-border-radius: 5; -fx-background-color: #f9f9f9; -fx-background-radius: 5;");
 
-        // Segundo Radio Group dentro de um Card
         Label group2Label = new Label("Opções:");
         ToggleGroup id_microcontrolador = new ToggleGroup();
         RadioButton enviar_para_um = new RadioButton("Uma Sala");
@@ -277,7 +247,6 @@ public class Main extends Application {
         VBox group2Box = new VBox(5, enviar_para_um, enviar_para_todos);
         group2Box.setAlignment(Pos.CENTER);
 
-        // Input que aparece ao selecionar a primeira opção do segundo grupo
         Label inputLabel = new Label("Digite o ID da sala:");
         TextField inputField = new TextField();
         inputLabel.setVisible(false);
@@ -293,14 +262,12 @@ public class Main extends Application {
             }
         });
 
-        // Estilo do Card para o Grupo 2
         VBox card2 = new VBox(10, group2Label, group2Box, inputLabel, inputField);
         card2.setAlignment(Pos.CENTER);
         card2.setPadding(new Insets(10));
         card2.setStyle(
                 "-fx-border-color: #ccc; -fx-border-radius: 5; -fx-background-color: #f9f9f9; -fx-background-radius: 5;");
 
-        // Botões de Submeter e Cancelar
         Button submit = new Button("Enviar");
         Button cancelar = new Button("Cancelar");
 
@@ -368,7 +335,6 @@ public class Main extends Application {
         dialog.showAndWait();
     }
 
-    // Método para criar a tabela da célula 1
     @SuppressWarnings("unchecked")
     private TableView<Device> tabelaConexoes() {
         TableView<Device> table = new TableView<>();
@@ -389,7 +355,6 @@ public class Main extends Application {
         return table;
     }
 
-    // Método para criar a tabela da célula 2
     @SuppressWarnings("unchecked")
     private TableView<Appliance> tabelaDispositivos() {
         TableView<Appliance> table = new TableView<>();
@@ -414,7 +379,6 @@ public class Main extends Application {
         launch(args);
     }
 
-    // Classes auxiliares para as tabelas
     public static class Device {
         private Integer id;
         private String address;
@@ -439,7 +403,6 @@ public class Main extends Application {
         }
     }
 
-    // Classe Appliance atualizada
     public static class Appliance {
         private IntegerProperty id;
         private IntegerProperty on;
