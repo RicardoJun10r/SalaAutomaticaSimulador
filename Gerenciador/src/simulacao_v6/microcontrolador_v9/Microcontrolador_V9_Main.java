@@ -4,7 +4,7 @@ import salaAula.Sala;
 
 public class Microcontrolador_V9_Main {
     public static void main(String[] args) {
-        Sala sala = new Sala(6);
+        Sala sala = new Sala(2);
 
         sala.encherSala();
 
