@@ -51,9 +51,9 @@ public class Microcontrolador_V9 {
                                 new ServerReq(line.getEndereco(),
                                         line.getPorta(),
                                         line.getHeaders(),
-                                        this.SALA.desligarAparelhos(), // Removido o prefixo
+                                        this.SALA.desligarAparelhos(),
                                         line.getOpcao(),
-                                        this.ID)); // Enviando o ID corretamente
+                                        this.ID));
                         break;
                     }
                     case 1, 3: {
@@ -61,9 +61,9 @@ public class Microcontrolador_V9 {
                                 new ServerReq(line.getEndereco(),
                                         line.getPorta(),
                                         line.getHeaders(),
-                                        this.SALA.ligarAparelhos(), // Removido o prefixo
+                                        this.SALA.ligarAparelhos(),
                                         line.getOpcao(),
-                                        this.ID)); // Enviando o ID corretamente
+                                        this.ID));
                         break;
                     }
                     case 2, 5: {
@@ -71,9 +71,9 @@ public class Microcontrolador_V9 {
                                 new ServerReq(line.getEndereco(),
                                         line.getPorta(),
                                         line.getHeaders(),
-                                        this.SALA.mostrarAparelhos(), // Removido o prefixo
+                                        this.SALA.mostrarAparelhos(),
                                         line.getOpcao(),
-                                        this.ID)); // Enviando o ID corretamente
+                                        this.ID));
                         break;
                     }
                     default: {
@@ -81,7 +81,7 @@ public class Microcontrolador_V9 {
                                 new ServerReq(line.getEndereco(),
                                         line.getPorta(),
                                         line.getHeaders(),
-                                        "ERRO: opção inválida!", // Mensagem de erro sem prefixo
+                                        "ERRO: opção inválida!",
                                         line.getOpcao(),
                                         this.ID));
                         break;
