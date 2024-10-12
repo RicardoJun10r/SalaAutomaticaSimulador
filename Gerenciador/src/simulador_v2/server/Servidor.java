@@ -1,6 +1,9 @@
 package simulador_v2.server;
 
+import javafx.application.Platform;
 import javafx.scene.control.TextArea;
+import simulador_v2.Main.Appliance;
+import util.ServerReq;
 import util.api.SocketClientSide;
 import util.api.SocketServerSide;
 import util.api.SocketType;
@@ -10,26 +13,23 @@ import util.api.Interface.ISocketWriteFunction;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Map;
-import java.util.Arrays;
+import java.util.function.Consumer;
 
 public class Servidor {
     private ISocketListenFunction metodo_escutar;
-
     private ISocketWriteFunction metodo_enviar;
-
     private ISocketConnectionsFunction atualizarConexoes;
-
     private SocketServerSide server;
-
     private final int PORTA;
-
     private final String HOST;
-
     private final Boolean DEBUG;
-
-    private BlockingQueue<String> comandos;
-
+    private BlockingQueue<ServerReq> comandos;
     private TextArea responses;
+
+    private Consumer<Appliance> atualizarTabelaDispositivos;
+
+    // private ObservableList<Appliance> dispositivosList =
+    // FXCollections.observableArrayList();
 
     public Servidor(String host, int porta, boolean debug, TextArea responses) {
         this.PORTA = porta;
@@ -39,7 +39,7 @@ public class Servidor {
         this.comandos = new LinkedBlockingQueue<>();
     }
 
-    public void addCommand(String comando) {
+    public void addCommand(ServerReq comando) {
         this.comandos.add(comando);
     }
 
@@ -50,8 +50,13 @@ public class Servidor {
         }
     }
 
+    // Novo método para configurar o callback
+    public void configurarAtualizarTabelaDispositivos(Consumer<Appliance> atualizarTabelaDispositivos) {
+        this.atualizarTabelaDispositivos = atualizarTabelaDispositivos;
+    }
+
     public void start() {
-        this.server = new SocketServerSide(this.HOST, this.PORTA, SocketType.TEXTO);
+        this.server = new SocketServerSide(this.HOST, this.PORTA, SocketType.OBJETO);
 
         if (this.atualizarConexoes != null) {
             this.server.configurarUpdateConnections(this.atualizarConexoes);
@@ -63,66 +68,42 @@ public class Servidor {
             while (true) {
                 SocketClientSide cliente = this.server.filaClientes();
                 if (cliente != null) {
-                    String line;
-                    while ((line = cliente.receberMensagem()) != null) {
+                    ServerReq line;
+                    while ((line = (ServerReq) cliente.receberObjeto()) != null) {
                         if (DEBUG) {
                             System.out.println(
                                     "DEBUG [" + cliente.getEndereco() + ":" + cliente.getPorta() + "]: " + line);
                         }
-                        if (line.startsWith("res")) {
-                            String[] res = line.split(";");
-                            this.server.unicast(res[1], Integer.parseInt(res[2]), res[3]);
+                        final String receivedLine = responses.getText() + "\n" + line.getMensagem();
+                        Platform.runLater(() -> responses.setText(receivedLine));
+
+                        // Se for uma descrição de sala, atualizar a tabela de dispositivos
+                        if (line.getOpcao() == 2) { // 2 representa a operação "Descrever"
+                            String resposta = line.getMensagem();
+
+                            // Chamar o método para processar a resposta e atualizar a tabela
+                            processarDescricaoSala(line.getMicrocontrolador_id(), resposta);
                         }
-                        if (line.startsWith("fwd")) {
-                            String[] res = line.split(";");
-                            if (!verificarConexao(res[1], Integer.parseInt(res[2]))) {
-                                adicionarConexao(res[1], Integer.parseInt(res[2]));
-                            }
-                            if (res[4].equals("-1")) {
-                                this.server.broadcast("fwd;" + res[1] + ";" + res[2] + ";" + res[5]);
-                            } else {
-                                this.server.unicast(Integer.parseInt(res[4]),
-                                        "fwd;" + res[1] + ";" + res[2] + ";" + res[5]);
-                            }
-                        }
-                        if (line.contains("*")) {
-                            line = line.replace('*', '\n');
-                        }
-                        final String receivedLine = responses.getText() + "\n" + line;
-                        javafx.application.Platform.runLater(() -> responses.setText(receivedLine));
                     }
                 }
             }
         };
 
         this.metodo_enviar = () -> {
-            String comando;
-            String[] res;
+            ServerReq comando;
             while (true) {
                 try {
                     comando = this.comandos.take();
                     System.out.println("Comando capturado!");
                     if (comando != null) {
-                        res = comando.split(";");
-                        if (res[0].equals("0")) {
-                            if (res[1].equals("-1")) {
-                                this.server.broadcast(res[2]);
+                        if (comando.getMensagem().equals("unicast")) {
+                            if (this.server.getConexoes().containsKey(comando.getMicrocontrolador_id())) {
+                                this.server.unicast(comando.getMicrocontrolador_id(), comando);
                             } else {
-                                System.out.println("Enviando: " + comando);
-                                this.server.unicast(Integer.parseInt(res[1]), res[2]);
-                            }
-                        } else if (res[0].equals("1")) {
-                            if (res[2].equals("-1")) {
-                                this.server.unicast(Integer.parseInt(res[1]), "fwd;" + this.server.getEndereco() + ";"
-                                        + this.server.getPorta() + ";-1;" + res[3]);
-                            } else {
-                                System.out.println("Enviando: " + comando);
-                                System.out.println(Arrays.toString(res));
-                                this.server.unicast(Integer.parseInt(res[1]), "fwd;" + this.server.getEndereco() + ";"
-                                        + this.server.getPorta() + ";" + res[2] + ";" + res[3]);
+                                System.out.println("ID não encontrado nas conexões ativas.");
                             }
                         } else {
-                            System.out.println("ERRO, SEM COMANDO ESPECIFICADO");
+                            this.server.broadcast(comando);
                         }
                     }
                 } catch (InterruptedException e) {
@@ -132,25 +113,42 @@ public class Servidor {
         };
 
         this.server.configurarMetodoEscutar(metodo_escutar);
-
         this.server.configurarMetodoEnviar(metodo_enviar);
 
         this.server.enviar();
-
         this.server.escutar();
     }
 
-    public Boolean verificarConexao(String endereco, int porta) {
-        return this.server.verificarConexao(endereco, porta);
-    }
+    private void processarDescricaoSala(int idSala, String resposta) {
+        // Remover prefixo se presente
+        int index = resposta.indexOf("Sala com");
+        if (index != -1) {
+            resposta = resposta.substring(index);
+        }
 
-    public void adicionarConexao(String endereco, int porta) {
-        SocketClientSide nova_conexao = new SocketClientSide(endereco, porta);
-        nova_conexao.conectar();
-        nova_conexao.configurarEntradaSaida(SocketType.TEXTO);
-        this.server.adicionar(nova_conexao);
-        if (this.atualizarConexoes != null) {
-            this.server.configurarUpdateConnections(this.atualizarConexoes);
+        // Variáveis para contagem
+        int totalLigados = 0;
+        int totalDesligados = 0;
+
+        // Dividir a resposta em linhas
+        String[] linhas = resposta.split("\\*");
+        for (String linha : linhas) {
+            linha = linha.trim();
+            if (!linha.isEmpty()) {
+                if (linha.startsWith("Ligados:")) {
+                    totalLigados = Integer.parseInt(linha.substring(8).trim());
+                } else if (linha.startsWith("Desligados:")) {
+                    totalDesligados = Integer.parseInt(linha.substring(11).trim());
+                }
+            }
+        }
+
+        // Criar o objeto Appliance
+        Appliance appliance = new Appliance(idSala, totalLigados, totalDesligados);
+
+        // Utilizar o callback para atualizar a tabela
+        if (atualizarTabelaDispositivos != null) {
+            Platform.runLater(() -> atualizarTabelaDispositivos.accept(appliance));
         }
     }
 

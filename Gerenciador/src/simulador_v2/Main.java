@@ -1,7 +1,13 @@
+// Classe Main.java atualizada
+
 package simulador_v2;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,18 +21,25 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import simulador_v2.server.Servidor;
+import util.ServerReq;
 
 public class Main extends Application {
 
     private Circle statusCircle;
-
     private Label addressPortLabel;
-
     private Servidor servidor;
-
     private static Thread server_thread;
-
     private TextArea responses;
+    private String endereco;
+    private int porta;
+
+    // ObservableLists para atualizar as tabelas
+    private ObservableList<Device> conexoesList = FXCollections.observableArrayList();
+    private ObservableList<Appliance> dispositivosList = FXCollections.observableArrayList();
+
+    // Referência para as tabelas
+    private TableView<Device> tabela_conexoes;
+    private TableView<Appliance> tabela_dispositivos;
 
     @Override
     public void start(Stage primaryStage) {
@@ -61,16 +74,16 @@ public class Main extends Application {
         sideBar.setStyle("-fx-background-color: #e0e0e0;");
         sideBar.setPrefWidth(250); // Aumentar a largura da Sidebar
 
-        Button option1 = new Button("Iniciar Servidor");
-        Button option2 = new Button("Microcontrolador");
-        Button option3 = new Button("Sair");
+        Button ligar = new Button("Iniciar Servidor");
+        Button microcontrolador = new Button("Microcontrolador");
+        Button sair = new Button("Sair");
 
         // Eventos para os botões
-        option1.setOnAction(e -> openOption1Dialog());
-        option2.setOnAction(e -> openOption2Dialog());
-        option3.setOnAction(e -> Platform.exit());
+        ligar.setOnAction(e -> ligarDialog());
+        microcontrolador.setOnAction(e -> microcontroladorDialog());
+        sair.setOnAction(e -> Platform.exit());
 
-        sideBar.getChildren().addAll(option1, option2, option3);
+        sideBar.getChildren().addAll(ligar, microcontrolador, sair);
 
         // Grid 2x2 no centro
         GridPane grid = new GridPane();
@@ -97,12 +110,12 @@ public class Main extends Application {
         }
 
         // Célula 1: Tabela com id, endereço e porta
-        TableView<Device> table1 = createTable1();
-        grid.add(table1, 0, 0);
+        tabela_conexoes = tabelaConexoes();
+        grid.add(tabela_conexoes, 0, 0);
 
         // Célula 2: Tabela com id, aparelhos, ligados e desligados
-        TableView<Appliance> table2 = createTable2();
-        grid.add(table2, 1, 0);
+        tabela_dispositivos = tabelaDispositivos();
+        grid.add(tabela_dispositivos, 1, 0);
 
         // Célula 3: TextArea
         responses = new TextArea();
@@ -143,7 +156,7 @@ public class Main extends Application {
     }
 
     // Método para abrir o diálogo da Opção 1
-    private void openOption1Dialog() {
+    private void ligarDialog() {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Ligar Servidor");
@@ -155,22 +168,55 @@ public class Main extends Application {
         TextField portField = new TextField();
 
         Button ligar = new Button("Ligar");
-
         Button cancelar = new Button("Cancelar");
 
         ligar.setOnAction(e -> {
-            String address = addressField.getText();
+            endereco = addressField.getText();
             String port = portField.getText();
 
-            if (!address.isEmpty() && !port.isEmpty()) {
-                this.servidor = new Servidor(address, Integer.parseInt(port), false, responses);
+            if (!endereco.isEmpty() && !port.isEmpty()) {
+                porta = Integer.parseInt(port);
+                this.servidor = new Servidor(endereco, porta, false, responses);
+
+                // Atualizar a tabela de conexões quando houver mudanças
+                servidor.configurarUpdateConnections(() -> {
+                    Platform.runLater(() -> {
+                        conexoesList.clear();
+                        servidor.listarConexoes().forEach((id, conexao) -> {
+                            conexoesList.add(new Device(id, conexao.getEndereco(), String.valueOf(conexao.getPorta())));
+                        });
+                    });
+                });
+
+                // Configurar o callback para atualizar a tabela de dispositivos
+                servidor.configurarAtualizarTabelaDispositivos(appliance -> {
+                    // Já estamos dentro do Platform.runLater no método processarDescricaoSala
+                    // Verificar se já existe um registro para o ID da sala
+                    boolean salaExistente = false;
+                    for (Appliance a : dispositivosList) {
+                        if (a.getId().equals(appliance.getId())) {
+                            // Atualizar os valores
+                            a.setOn(appliance.getOn());
+                            a.setOff(appliance.getOff());
+                            salaExistente = true;
+                            break;
+                        }
+                    }
+                    if (!salaExistente) {
+                        // Adicionar novo registro
+                        dispositivosList.add(appliance);
+                    }
+                    // Não é necessário chamar tabela_dispositivos.refresh() pois as propriedades são observáveis
+                });
+                
+
                 server_thread = new Thread(() -> {
                     this.servidor.start();
                 });
                 server_thread.setDaemon(true);
                 server_thread.start();
                 statusCircle.setFill(Color.GREEN);
-                addressPortLabel.setText("Servidor ligado (" + address + ":" + port + ")");
+                addressPortLabel.setText("Servidor ligado (" + endereco + ":" + port + ")");
                 dialog.close();
             } else {
                 Alert alert = new Alert(AlertType.ERROR);
@@ -189,45 +235,46 @@ public class Main extends Application {
         vbox.setAlignment(Pos.CENTER);
         vbox.setPadding(new Insets(20));
 
-        Scene scene = new Scene(vbox, 600, 600); // Aumentar o tamanho do diálogo
+        Scene scene = new Scene(vbox, 400, 300); // Ajuste do tamanho do diálogo
         dialog.setScene(scene);
         dialog.showAndWait();
     }
 
     // Método para abrir o diálogo da Opção 2
-    private void openOption2Dialog() {
+    private void microcontroladorDialog() {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Microcontrolador");
 
         // Primeiro Radio Group dentro de um Card
         Label group1Label = new Label("Opções:");
-        ToggleGroup group1 = new ToggleGroup();
-        RadioButton optionG1_1 = new RadioButton("Ligar");
-        RadioButton optionG1_2 = new RadioButton("Desligar");
-        RadioButton optionG1_3 = new RadioButton("Descrever");
-        optionG1_1.setToggleGroup(group1);
-        optionG1_2.setToggleGroup(group1);
-        optionG1_3.setToggleGroup(group1);
+        ToggleGroup opcao_microcontrolador = new ToggleGroup();
+        RadioButton ligar = new RadioButton("Desligar");
+        RadioButton desligar = new RadioButton("Ligar");
+        RadioButton descrever = new RadioButton("Descrever");
+        ligar.setToggleGroup(opcao_microcontrolador);
+        desligar.setToggleGroup(opcao_microcontrolador);
+        descrever.setToggleGroup(opcao_microcontrolador);
 
-        VBox group1Box = new VBox(5, optionG1_1, optionG1_2, optionG1_3);
+        VBox group1Box = new VBox(5, ligar, desligar, descrever);
         group1Box.setAlignment(Pos.CENTER);
 
         // Estilo do Card para o Grupo 1
         VBox card1 = new VBox(10, group1Label, group1Box);
         card1.setAlignment(Pos.CENTER);
         card1.setPadding(new Insets(10));
-        card1.setStyle("-fx-border-color: #ccc; -fx-border-radius: 5; -fx-background-color: #f9f9f9; -fx-background-radius: 5;");
+        card1.setStyle(
+                "-fx-border-color: #ccc; -fx-border-radius: 5; -fx-background-color: #f9f9f9; -fx-background-radius: 5;");
 
         // Segundo Radio Group dentro de um Card
         Label group2Label = new Label("Opções:");
-        ToggleGroup group2 = new ToggleGroup();
-        RadioButton optionG2_1 = new RadioButton("Uma Sala");
-        RadioButton optionG2_2 = new RadioButton("Todas as salas");
-        optionG2_1.setToggleGroup(group2);
-        optionG2_2.setToggleGroup(group2);
+        ToggleGroup id_microcontrolador = new ToggleGroup();
+        RadioButton enviar_para_um = new RadioButton("Uma Sala");
+        RadioButton enviar_para_todos = new RadioButton("Todas as salas");
+        enviar_para_um.setToggleGroup(id_microcontrolador);
+        enviar_para_todos.setToggleGroup(id_microcontrolador);
 
-        VBox group2Box = new VBox(5, optionG2_1, optionG2_2);
+        VBox group2Box = new VBox(5, enviar_para_um, enviar_para_todos);
         group2Box.setAlignment(Pos.CENTER);
 
         // Input que aparece ao selecionar a primeira opção do segundo grupo
@@ -236,8 +283,8 @@ public class Main extends Application {
         inputLabel.setVisible(false);
         inputField.setVisible(false);
 
-        group2.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
-            if (newToggle == optionG2_1) {
+        id_microcontrolador.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
+            if (newToggle == enviar_para_um) {
                 inputLabel.setVisible(true);
                 inputField.setVisible(true);
             } else {
@@ -250,36 +297,80 @@ public class Main extends Application {
         VBox card2 = new VBox(10, group2Label, group2Box, inputLabel, inputField);
         card2.setAlignment(Pos.CENTER);
         card2.setPadding(new Insets(10));
-        card2.setStyle("-fx-border-color: #ccc; -fx-border-radius: 5; -fx-background-color: #f9f9f9; -fx-background-radius: 5;");
+        card2.setStyle(
+                "-fx-border-color: #ccc; -fx-border-radius: 5; -fx-background-color: #f9f9f9; -fx-background-radius: 5;");
 
         // Botões de Submeter e Cancelar
-        Button submitButton = new Button("Enviar");
-        Button cancelButton = new Button("Cancelar");
+        Button submit = new Button("Enviar");
+        Button cancelar = new Button("Cancelar");
 
-        submitButton.setOnAction(e -> {
-            // Aqui você pode adicionar a lógica de submissão
+        submit.setOnAction(e -> {
+            RadioButton opcaoSelecionada = (RadioButton) opcao_microcontrolador.getSelectedToggle();
+            RadioButton destinatarioSelecionado = (RadioButton) id_microcontrolador.getSelectedToggle();
+
+            if (opcaoSelecionada != null && destinatarioSelecionado != null) {
+                int op;
+                switch (opcaoSelecionada.getText()) {
+                    case "Ligar":
+                        op = 0;
+                        break;
+                    case "Desligar":
+                        op = 1;
+                        break;
+                    case "Descrever":
+                        op = 2;
+                        break;
+                    default:
+                        op = 2;
+                        break;
+                }
+
+                if (destinatarioSelecionado == enviar_para_um) {
+                    String idSalaStr = inputField.getText();
+                    if (!idSalaStr.isEmpty()) {
+                        int idSala = Integer.parseInt(idSalaStr);
+                        System.out.println(op + " " + idSala);
+                        servidor.addCommand(new ServerReq(endereco, porta, "SERVER", "unicast", op, idSala));
+                    } else {
+                        Alert alert = new Alert(AlertType.ERROR);
+                        alert.setTitle("Erro");
+                        alert.setHeaderText(null);
+                        alert.setContentText("Por favor, digite o ID da sala.");
+                        alert.showAndWait();
+                        return;
+                    }
+                } else {
+                    servidor.addCommand(new ServerReq(endereco, porta, "SERVER", "broadcast", op, -1));
+                }
+                dialog.close();
+            } else {
+                Alert alert = new Alert(AlertType.ERROR);
+                alert.setTitle("Erro");
+                alert.setHeaderText(null);
+                alert.setContentText("Por favor, selecione todas as opções.");
+                alert.showAndWait();
+            }
+        });
+
+        cancelar.setOnAction(e -> {
             dialog.close();
         });
 
-        cancelButton.setOnAction(e -> {
-            dialog.close();
-        });
-
-        HBox buttonBox = new HBox(10, submitButton, cancelButton);
+        HBox buttonBox = new HBox(10, submit, cancelar);
         buttonBox.setAlignment(Pos.CENTER);
 
         VBox vbox = new VBox(20, card1, card2, buttonBox);
         vbox.setAlignment(Pos.CENTER);
         vbox.setPadding(new Insets(20));
 
-        Scene scene = new Scene(vbox, 600, 600); // Aumentar o tamanho do diálogo
+        Scene scene = new Scene(vbox, 400, 500); // Ajuste do tamanho do diálogo
         dialog.setScene(scene);
         dialog.showAndWait();
     }
 
     // Método para criar a tabela da célula 1
     @SuppressWarnings("unchecked")
-    private TableView<Device> createTable1() {
+    private TableView<Device> tabelaConexoes() {
         TableView<Device> table = new TableView<>();
 
         TableColumn<Device, Integer> idColumn = new TableColumn<>("ID");
@@ -293,41 +384,28 @@ public class Main extends Application {
 
         table.getColumns().addAll(idColumn, addressColumn, portColumn);
 
-        // Adicionar dados de exemplo
-        table.getItems().addAll(
-                new Device(1, "192.168.0.1", "8080"),
-                new Device(2, "192.168.0.2", "8081"),
-                new Device(3, "192.168.0.3", "8082")
-        );
+        table.setItems(conexoesList);
 
         return table;
     }
 
     // Método para criar a tabela da célula 2
     @SuppressWarnings("unchecked")
-    private TableView<Appliance> createTable2() {
+    private TableView<Appliance> tabelaDispositivos() {
         TableView<Appliance> table = new TableView<>();
 
-        TableColumn<Appliance, Integer> idColumn = new TableColumn<>("ID");
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        TableColumn<Appliance, Number> idColumn = new TableColumn<>("ID Sala");
+        idColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty());
 
-        TableColumn<Appliance, String> deviceColumn = new TableColumn<>("Aparelhos");
-        deviceColumn.setCellValueFactory(new PropertyValueFactory<>("device"));
+        TableColumn<Appliance, Number> onColumn = new TableColumn<>("Ligados");
+        onColumn.setCellValueFactory(cellData -> cellData.getValue().onProperty());
 
-        TableColumn<Appliance, String> onColumn = new TableColumn<>("Ligados");
-        onColumn.setCellValueFactory(new PropertyValueFactory<>("on"));
+        TableColumn<Appliance, Number> offColumn = new TableColumn<>("Desligados");
+        offColumn.setCellValueFactory(cellData -> cellData.getValue().offProperty());
 
-        TableColumn<Appliance, String> offColumn = new TableColumn<>("Desligados");
-        offColumn.setCellValueFactory(new PropertyValueFactory<>("off"));
+        table.getColumns().addAll(idColumn, onColumn, offColumn);
 
-        table.getColumns().addAll(idColumn, deviceColumn, onColumn, offColumn);
-
-        // Adicionar dados de exemplo
-        table.getItems().addAll(
-                new Appliance(1, "TV", "Sim", "Não"),
-                new Appliance(2, "Computador", "Não", "Sim"),
-                new Appliance(3, "Geladeira", "Sim", "Não")
-        );
+        table.setItems(dispositivosList);
 
         return table;
     }
@@ -348,27 +426,66 @@ public class Main extends Application {
             this.port = port;
         }
 
-        public Integer getId() { return id; }
-        public String getAddress() { return address; }
-        public String getPort() { return port; }
-    }
-
-    public static class Appliance {
-        private Integer id;
-        private String device;
-        private String on;
-        private String off;
-
-        public Appliance(Integer id, String device, String on, String off) {
-            this.id = id;
-            this.device = device;
-            this.on = on;
-            this.off = off;
+        public Integer getId() {
+            return id;
         }
 
-        public Integer getId() { return id; }
-        public String getDevice() { return device; }
-        public String getOn() { return on; }
-        public String getOff() { return off; }
+        public String getAddress() {
+            return address;
+        }
+
+        public String getPort() {
+            return port;
+        }
     }
+
+    // Classe Appliance atualizada
+    public static class Appliance {
+        private IntegerProperty id;
+        private IntegerProperty on;
+        private IntegerProperty off;
+
+        public Appliance(Integer id, Integer on, Integer off) {
+            this.id = new SimpleIntegerProperty(id);
+            this.on = new SimpleIntegerProperty(on);
+            this.off = new SimpleIntegerProperty(off);
+        }
+
+        public Integer getId() {
+            return id.get();
+        }
+
+        public void setId(Integer id) {
+            this.id.set(id);
+        }
+
+        public IntegerProperty idProperty() {
+            return id;
+        }
+
+        public Integer getOn() {
+            return on.get();
+        }
+
+        public void setOn(Integer on) {
+            this.on.set(on);
+        }
+
+        public IntegerProperty onProperty() {
+            return on;
+        }
+
+        public Integer getOff() {
+            return off.get();
+        }
+
+        public void setOff(Integer off) {
+            this.off.set(off);
+        }
+
+        public IntegerProperty offProperty() {
+            return off;
+        }
+    }
+
 }

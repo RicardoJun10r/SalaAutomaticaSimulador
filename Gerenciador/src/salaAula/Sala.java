@@ -1,7 +1,6 @@
 package salaAula;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import salaAula.Aparelhos.ArCondicionado;
@@ -39,13 +38,20 @@ public class Sala {
     }
 
     public String mostrarAparelhos(){
-        String mensagem = "";
-        mensagem += "Sala com [ " + (NUMERO_APARELHOS*2) + " ] aparelhos*";
-        Iterator<InterAparelho> iterator = this.aparelhos.iterator();
-        while (iterator.hasNext()) {
-            InterAparelho i = iterator.next();
-            mensagem += i.Descricao();
+        int totalLigados = 0;
+        int totalDesligados = 0;
+    
+        for(InterAparelho i : aparelhos) {
+            if(i.State()) {
+                totalLigados++;
+            } else {
+                totalDesligados++;
+            }
         }
+    
+        String mensagem = "Sala com [ " + (NUMERO_APARELHOS * 2) + " ] aparelhos*";
+        mensagem += "Ligados: " + totalLigados + "*";
+        mensagem += "Desligados: " + totalDesligados + "*";
         return mensagem;
     }
 

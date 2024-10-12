@@ -41,7 +41,7 @@ public class SocketServerSide extends IMySocket {
 
     public SocketServerSide(String endereco, int porta, SocketType TIPO) {
         super(endereco, porta);
-        this.executorService = Executors.newVirtualThreadPerTaskExecutor();
+        this.executorService = Executors.newFixedThreadPool(NUMERO_THREADS);
         this.conexoes = Collections.synchronizedMap(new HashMap<>());
         this.fila_escuta = new LinkedBlockingQueue<>();
         this.contador_interno = 0;
@@ -112,6 +112,7 @@ public class SocketServerSide extends IMySocket {
             System.out.println("ERRO: MÉTODO DO TIPO [ISocketListenFunction] NÃO CONFIGURADO!");
         }
     }
+    
 
     public void fechar() {
         try {
@@ -124,17 +125,19 @@ public class SocketServerSide extends IMySocket {
 
     public void adicionar(SocketClientSide nova_conexao) {
         nova_conexao.configurarEntradaSaida(TIPO);
-        this.adicionarConexao(nova_conexao);
+        adicionarConexao(nova_conexao);
     }
-    
+
     private void adicionarConexao(SocketClientSide nova_conexao) {
-        this.conexoes.put(contador_interno, nova_conexao);
-        this.fila_escuta.add(nova_conexao);
-        this.contador_interno++;
-        if (this.atualizar_conexoes != null) {
-            this.atualizar_conexoes.updateConnections();
+        if (this.fila_escuta.add(nova_conexao)) {
+            this.conexoes.put(contador_interno, nova_conexao);
+            contador_interno++;
+            if (this.atualizar_conexoes != null) {
+                this.atualizar_conexoes.updateConnections();
+            }
         }
     }
+    
 
     public void unicast(Integer id, Object obj) {
         this.conexoes.get(id).enviarObjeto(obj);
@@ -163,9 +166,8 @@ public class SocketServerSide extends IMySocket {
                         conexao -> conexao.getEndereco().equals(endereco) && conexao.getPorta() == porta)
                 .findFirst()
                 .ifPresentOrElse(
-                    conexao -> conexao.enviarObjeto(obj),
-                    () -> System.out.println("Cliente não encontrado para o endereço e porta especificados.")
-                );
+                        conexao -> conexao.enviarObjeto(obj),
+                        () -> System.out.println("Cliente não encontrado para o endereço e porta especificados."));
     }
 
     public void multicast(Integer[] id, String msg) {

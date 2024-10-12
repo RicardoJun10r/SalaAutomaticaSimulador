@@ -33,7 +33,12 @@ public class Computador implements InterAparelho {
 
     @Override
     public String Descricao() {
-        return "Computador de ID = [ " + ID + " ] | Status = [ " + this.status + " ]*";
+        return "Aparelho: Computador " + ID + " - Estado: " + status;
+    }
+
+    @Override
+    public Boolean State() {
+        return status;
     }
     
 }

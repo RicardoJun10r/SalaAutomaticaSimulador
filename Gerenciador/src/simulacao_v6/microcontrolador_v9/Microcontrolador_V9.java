@@ -40,7 +40,7 @@ public class Microcontrolador_V9 {
         this.metodo_escutar = () -> {
             ServerReq line;
             while ((line = (ServerReq) this.socket.receberObjeto()) != null) {
-                if(DEBUG){
+                if (DEBUG) {
                     System.out.println(line.toString());
                 }
                 if (line.getHeaders().equalsIgnoreCase("fwd"))
@@ -51,9 +51,9 @@ public class Microcontrolador_V9 {
                                 new ServerReq(line.getEndereco(),
                                         line.getPorta(),
                                         line.getHeaders(),
-                                        ("ID = [ " + ID + " ]: " + this.SALA.desligarAparelhos()),
+                                        this.SALA.desligarAparelhos(), // Removido o prefixo
                                         line.getOpcao(),
-                                        line.getMicrocontrolador_id()));
+                                        this.ID)); // Enviando o ID corretamente
                         break;
                     }
                     case 1, 3: {
@@ -61,9 +61,9 @@ public class Microcontrolador_V9 {
                                 new ServerReq(line.getEndereco(),
                                         line.getPorta(),
                                         line.getHeaders(),
-                                        ("ID = [ " + ID + " ]: " + this.SALA.ligarAparelhos()),
+                                        this.SALA.ligarAparelhos(), // Removido o prefixo
                                         line.getOpcao(),
-                                        line.getMicrocontrolador_id()));
+                                        this.ID)); // Enviando o ID corretamente
                         break;
                     }
                     case 2, 5: {
@@ -71,9 +71,9 @@ public class Microcontrolador_V9 {
                                 new ServerReq(line.getEndereco(),
                                         line.getPorta(),
                                         line.getHeaders(),
-                                        ("ID = [ " + ID + " ]: " + this.SALA.mostrarAparelhos()),
+                                        this.SALA.mostrarAparelhos(), // Removido o prefixo
                                         line.getOpcao(),
-                                        line.getMicrocontrolador_id()));
+                                        this.ID)); // Enviando o ID corretamente
                         break;
                     }
                     default: {
@@ -81,9 +81,9 @@ public class Microcontrolador_V9 {
                                 new ServerReq(line.getEndereco(),
                                         line.getPorta(),
                                         line.getHeaders(),
-                                        ("ID = [ " + ID + " ]: " + "ERRO: opção inválida!"),
+                                        "ERRO: opção inválida!", // Mensagem de erro sem prefixo
                                         line.getOpcao(),
-                                        line.getMicrocontrolador_id()));
+                                        this.ID));
                         break;
                     }
                 }
