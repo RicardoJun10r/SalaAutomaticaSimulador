@@ -4,11 +4,11 @@ import salaAula.Sala;
 
 public class Microcontrolador_V9_Main {
     public static void main(String[] args) {
-        Sala sala = new Sala(2);
+        Sala sala = new Sala(6);
 
         sala.encherSala();
 
-        Microcontrolador_V9 microcontrolador_V9 = new Microcontrolador_V9("127.0.0.1", 5000, 3, sala, true);
+        Microcontrolador_V9 microcontrolador_V9 = new Microcontrolador_V9("127.0.0.1", 5000, 15, sala, true);
 
         microcontrolador_V9.start();
     }

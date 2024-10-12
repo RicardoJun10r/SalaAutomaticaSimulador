@@ -278,10 +278,10 @@ public class Main extends Application {
             if (opcaoSelecionada != null && destinatarioSelecionado != null) {
                 int op;
                 switch (opcaoSelecionada.getText()) {
-                    case "Ligar":
+                    case "Desligar":
                         op = 0;
                         break;
-                    case "Desligar":
+                    case "Ligar":
                         op = 1;
                         break;
                     case "Descrever":

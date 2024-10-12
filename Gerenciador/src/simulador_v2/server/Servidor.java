@@ -86,7 +86,6 @@ public class Servidor {
             while (true) {
                 try {
                     comando = this.comandos.take();
-                    System.out.println("Comando capturado!");
                     if (comando != null) {
                         if (comando.getMensagem().equals("unicast")) {
                             if (this.server.getConexoes().containsKey(comando.getMicrocontrolador_id())) {
