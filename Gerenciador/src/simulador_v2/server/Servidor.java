@@ -28,9 +28,6 @@ public class Servidor {
 
     private Consumer<Appliance> atualizarTabelaDispositivos;
 
-    // private ObservableList<Appliance> dispositivosList =
-    // FXCollections.observableArrayList();
-
     public Servidor(String host, int porta, boolean debug, TextArea responses) {
         this.PORTA = porta;
         this.HOST = host;
@@ -50,7 +47,6 @@ public class Servidor {
         }
     }
 
-    // Novo método para configurar o callback
     public void configurarAtualizarTabelaDispositivos(Consumer<Appliance> atualizarTabelaDispositivos) {
         this.atualizarTabelaDispositivos = atualizarTabelaDispositivos;
     }
@@ -77,11 +73,9 @@ public class Servidor {
                         final String receivedLine = responses.getText() + "\n" + line.getMensagem();
                         Platform.runLater(() -> responses.setText(receivedLine));
 
-                        // Se for uma descrição de sala, atualizar a tabela de dispositivos
                         if (line.getOpcao() == 2) { // 2 representa a operação "Descrever"
                             String resposta = line.getMensagem();
 
-                            // Chamar o método para processar a resposta e atualizar a tabela
                             processarDescricaoSala(line.getMicrocontrolador_id(), resposta);
                         }
                     }
@@ -120,17 +114,14 @@ public class Servidor {
     }
 
     private void processarDescricaoSala(int idSala, String resposta) {
-        // Remover prefixo se presente
         int index = resposta.indexOf("Sala com");
         if (index != -1) {
             resposta = resposta.substring(index);
         }
 
-        // Variáveis para contagem
         int totalLigados = 0;
         int totalDesligados = 0;
 
-        // Dividir a resposta em linhas
         String[] linhas = resposta.split("\\*");
         for (String linha : linhas) {
             linha = linha.trim();
@@ -143,10 +134,8 @@ public class Servidor {
             }
         }
 
-        // Criar o objeto Appliance
         Appliance appliance = new Appliance(idSala, totalLigados, totalDesligados);
 
-        // Utilizar o callback para atualizar a tabela
         if (atualizarTabelaDispositivos != null) {
             Platform.runLater(() -> atualizarTabelaDispositivos.accept(appliance));
         }
